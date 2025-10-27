@@ -15,7 +15,7 @@ import { Body } from './../furnituremodel/furnituremodels';
 
 @Component({
   selector: 'app-view3d',
-  templateUrl: './View3D.component.html',
+  templateUrl: './view3d.component.html',
   styleUrls: ['./view3d.component.scss'],
   standalone: false,
 })
