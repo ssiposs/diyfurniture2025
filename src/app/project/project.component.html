@@ -1,42 +1,165 @@
-<mat-toolbar>
-  <mat-button-toggle-group #group="matButtonToggleGroup" name="action" value="crop_square" aria-label="Draw Tool">
-    <mat-button-toggle value="select" aria-label="Text align left">
-      <mat-icon>select_all</mat-icon>
-    </mat-button-toggle>
-  </mat-button-toggle-group>
+<mat-toolbar color="primary">
+  <span>Project</span>
+  <span class="spacer"></span>
+  <button
+    mat-icon-button
+    (click)="toggleView()"
+    [matTooltip]="
+      animatedView ? 'Switch to Simple View' : 'Switch to Animated View'
+    "
+  >
+    <mat-icon>{{ animatedView ? "view_list" : "view_carousel" }}</mat-icon>
+  </button>
 </mat-toolbar>
-<mat-sidenav-container>
-  <mat-sidenav-content>
-    <div id="tbl">
-    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
 
-      <!-- Position Column -->
-      <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef> No. </th>
-        <td mat-cell *matCellDef="let element"> {{element.id}} </td>
-      </ng-container>
+<div class="page-container">
+  <div *ngIf="loading" class="info-box loading">Loading data...</div>
 
-      <!-- Name Column -->
-      <ng-container matColumnDef="width">
-        <th mat-header-cell *matHeaderCellDef> Width </th>
-        <td mat-cell *matCellDef="let element"> {{element.width}} </td>
-      </ng-container>
+  <div *ngIf="error" class="info-box error">
+    {{ error }}
+    <button
+      mat-raised-button
+      color="primary"
+      class="retry-button"
+      (click)="retry()"
+    >
+      Retry
+    </button>
+  </div>
 
-      <!-- Weight Column -->
-      <ng-container matColumnDef="heigth">
-        <th mat-header-cell *matHeaderCellDef> Height </th>
-        <td mat-cell *matCellDef="let element"> {{element.heigth}} </td>
-      </ng-container>
+  <table
+    mat-table
+    [dataSource]="dataSource"
+    class="mat-elevation-z8 custom-table"
+    [class.simple-view]="!animatedView"
+    *ngIf="!loading && !error"
+  >
+    <!-- Single Column for entire row -->
+    <ng-container matColumnDef="row">
+      <th mat-header-cell *matHeaderCellDef>
+        <div class="table-header">
+          <div class="header-cell name-col">Name</div>
+          <div class="header-cell">No.</div>
+          <div class="header-cell">Width</div>
+          <div class="header-cell">Height</div>
+          <div class="header-cell">Depth</div>
+          <div class="header-cell actions-col">Actions</div>
+        </div>
+      </th>
+      <td mat-cell *matCellDef="let element">
+        <div class="row-container" (click)="openItem(element)">
+          <div class="bg-image" *ngIf="animatedView"></div>
 
-      <!-- Symbol Column -->
-      <ng-container matColumnDef="depth">
-        <th mat-header-cell *matHeaderCellDef> Depth </th>
-        <td mat-cell *matCellDef="let element"> {{element.depth}} </td>
-      </ng-container>
+          <div class="row-content">
+            <div class="name">{{ element.name || "Default Name" }}</div>
+            <div class="details">
+              <div class="cell">{{ element.id }}</div>
+              <div class="cell">{{ element.width }}</div>
+              <div class="cell">{{ element.height }}</div>
+              <div class="cell">{{ element.depth }}</div>
+              <div class="actions">
+                <button
+                  mat-icon-button
+                  color="primary"
+                  (click)="openItem(element); $event.stopPropagation()"
+                >
+                  <mat-icon>open_in_new</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  (click)="deleteItem(element); $event.stopPropagation()"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  color="accent"
+                  (click)="archiveItem(element); $event.stopPropagation()"
+                >
+                  <mat-icon>archive</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </td>
+    </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
+    <tr mat-header-row *matHeaderRowDef="['row']"></tr>
+    <tr mat-row *matRowDef="let row; columns: ['row']"></tr>
+  </table>
+</div>
+
+<!-- Detail View Overlay -->
+<div class="detail-overlay" *ngIf="showDetail" (click)="closeDetail()">
+  <div class="detail-card" (click)="$event.stopPropagation()">
+    <div class="detail-header">
+      <h2>{{ selectedItem?.name || "Item Details" }}</h2>
+      <button mat-icon-button (click)="closeDetail()">
+        <mat-icon>close</mat-icon>
+      </button>
     </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+
+    <div class="detail-content" *ngIf="selectedItem">
+      <div class="detail-image">
+        <img src="https://picsum.photos/400/300" alt="Item preview" />
+      </div>
+
+      <div class="detail-info">
+        <div class="info-row">
+          <span class="label">ID:</span>
+          <span class="value">{{ selectedItem.id }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="label">Width:</span>
+          <span class="value">{{ selectedItem.width }} mm</span>
+        </div>
+
+        <div class="info-row">
+          <span class="label">Height:</span>
+          <span class="value">{{ selectedItem.height }} mm</span>
+        </div>
+
+        <div class="info-row">
+          <span class="label">Depth:</span>
+          <span class="value">{{ selectedItem.depth }} mm</span>
+        </div>
+
+        <div class="info-row" *ngIf="selectedItem.material">
+          <span class="label">Material:</span>
+          <span class="value">{{ selectedItem.material }}</span>
+        </div>
+
+        <div class="info-row" *ngIf="selectedItem.description">
+          <span class="label">Description:</span>
+          <span class="value">{{ selectedItem.description }}</span>
+        </div>
+      </div>
+
+      <div class="detail-actions">
+        <button mat-raised-button color="primary" (click)="closeDetail()">
+          <mat-icon>edit</mat-icon>
+          Edit
+        </button>
+        <button
+          mat-raised-button
+          color="accent"
+          (click)="archiveItem(selectedItem); $event.stopPropagation()"
+        >
+          <mat-icon>archive</mat-icon>
+          Archive
+        </button>
+        <button
+          mat-raised-button
+          color="warn"
+          (click)="deleteItem(selectedItem); $event.stopPropagation()"
+        >
+          <mat-icon>delete</mat-icon>
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

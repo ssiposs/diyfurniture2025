@@ -1,30 +1,94 @@
-import { Component, OnInit } from '@angular/core';
-import { Body } from '../furnituremodel/furnituremodels';
-import { FurnituremodelService } from '../furnituremodel/furnituremodel.service';
-import { BomItem, BomService, FurnitureBackendItem } from '../services/bom.service';
+import { Component, OnInit } from "@angular/core";
+import { Body } from "../furnituremodel/furnituremodels";
+import { FurnituremodelService } from "../furnituremodel/furnituremodel.service";
+import {
+  BomItem,
+  BomService,
+  FurnitureBackendItem,
+} from "../services/bom.service";
 
 @Component({
-    selector: 'app-project',
-    templateUrl: './project.component.html',
-    styleUrls: ['./project.component.scss'],
-    standalone: false
+  selector: "app-project",
+  templateUrl: "./project.component.html",
+  styleUrls: ["./project.component.scss"],
+  standalone: false,
 })
 export class ProjectComponent implements OnInit {
-    private bodies: Body[] = [];
-    private selectedBody: number = 0;
+  private bodies: Body[] = [];
+  private selectedBody: number = 0;
 
-    constructor(private furniture: FurnituremodelService, private bom: BomService) {}
+  loading = false;
+  error = "";
+  animatedView = true; // Toggle az animált nézethez
+  selectedItem: any = null; // A kiválasztott item a detail view-hoz
+  showDetail = false; // Detail view megjelenítése
 
-    public displayedColumns: string[] = ['id', 'width', 'heigth', 'depth'];
-    public dataSource: FurnitureBackendItem[] = [];
+  constructor(
+    private furniture: FurnituremodelService,
+    private bom: BomService
+  ) {}
 
-    ngOnInit(): void {
-        this.loadBomForSelected();
+  // Változás: mostantól csak egy oszlop van
+  public displayedColumns: string[] = ["row"];
+  public dataSource: any[] = [];
+
+  ngOnInit() {
+    this.loading = true;
+
+    this.bom.getMockBomForProject().subscribe({
+      next: (data) => {
+        this.dataSource = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = "Something went wrong when fetching data.";
+        this.loading = false;
+      },
+    });
+  }
+
+  toggleView() {
+    this.animatedView = !this.animatedView;
+  }
+
+  openItem(item: any) {
+    console.log("open:", item);
+    this.selectedItem = item;
+    this.showDetail = true;
+  }
+
+  closeDetail() {
+    this.showDetail = false;
+    this.selectedItem = null;
+  }
+
+  deleteItem(item: any) {
+    console.log("delete:", item);
+
+    if (confirm(`Are you sure you want to delete item ${item.id}?`)) {
+      this.dataSource = this.dataSource.filter((i) => i.id !== item.id);
+
+      // Ha a törölt item van megnyitva, zárjuk be a detail view-t
+      if (this.selectedItem?.id === item.id) {
+        this.closeDetail();
+      }
     }
+  }
 
-    private loadBomForSelected(): void {
-        this.bom.getBomForProject().subscribe(items => {
-            this.dataSource = items;
-        });
-    }
+  archiveItem(item: any) {
+    console.log("archive:", item);
+    alert(`Archiving item ${item.id}`);
+  }
+
+  retry() {
+    this.error = "";
+    this.loading = true;
+    this.ngOnInit(); // újratölti az adatokat
+  }
+
+  private loadBomForSelected(): void {
+    this.bom.getBomForProject().subscribe((items) => {
+      this.dataSource = items;
+    });
+  }
 }
