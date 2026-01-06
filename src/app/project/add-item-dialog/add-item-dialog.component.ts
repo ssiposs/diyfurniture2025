@@ -23,9 +23,6 @@ export class AddItemDialogComponent {
   ) {
     this.itemForm = this.fb.group({
       name: ['', Validators.required],
-      width: [0, [Validators.required, Validators.min(1)]],
-      height: [0, [Validators.required, Validators.min(1)]],
-      depth: [0, [Validators.required, Validators.min(1)]],
       description: ['']
     });
   }

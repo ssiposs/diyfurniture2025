@@ -20,9 +20,7 @@ describe('ProjectService', () => {
     // 1. Arrange (Prepare data)
     const mockInput: CreateProjectDto = { 
       name: 'Test Project', 
-      width: 100, 
-      height: 200, 
-      depth: 300 
+      description: 'A project for testing',
     };
     
     const mockBackendResponse = { 
@@ -46,7 +44,7 @@ describe('ProjectService', () => {
 
   it('createProject should rethrow error when API fails', async () => {
     // 1. Arrange
-    const mockInput: CreateProjectDto = { name: 'Fail', width: 0, height: 0, depth: 0 };
+    const mockInput: CreateProjectDto = { name: 'Fail', description: 'This will fail' };
     const mockError = new Error('Network Error');
 
     // Make axios fail
