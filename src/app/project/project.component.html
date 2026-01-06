@@ -1,5 +1,5 @@
 <mat-toolbar color="primary">
-  <span>Project</span>
+  <span>Projects</span>
   <span class="spacer"></span>
   <button
     mat-icon-button
@@ -13,9 +13,11 @@
 </mat-toolbar>
 
 <div class="page-container">
-  <div *ngIf="loading" class="info-box loading">Loading data...</div>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="info-box loading">Loading projects...</div>
 
-  <div *ngIf="error" class="info-box error">
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="info-box error">
     {{ error }}
     <button
       mat-raised-button
@@ -27,22 +29,41 @@
     </button>
   </div>
 
+  <!-- Empty State -->
+  <div
+    *ngIf="!loading && !error && dataSource.length === 0"
+    class="info-box empty"
+  >
+    No projects found. Create your first project to get started.
+  </div>
+
+  <mat-paginator
+    *ngIf="!error && totalElements > 0"
+    [disabled]="loading"
+    [length]="totalElements"
+    [pageIndex]="currentPage"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="pageSizeOptions"
+    (page)="onPageChange($event)"
+    showFirstLastButtons
+    aria-label="Select page of projects"
+  >
+  </mat-paginator>
+  <!-- Project Table -->
   <table
     mat-table
     [dataSource]="dataSource"
     class="mat-elevation-z8 custom-table"
     [class.simple-view]="!animatedView"
-    *ngIf="!loading && !error"
+    *ngIf="!loading && !error && dataSource.length > 0"
   >
     <!-- Single Column for entire row -->
     <ng-container matColumnDef="row">
       <th mat-header-cell *matHeaderCellDef>
         <div class="table-header">
           <div class="header-cell name-col">Name</div>
-          <div class="header-cell">No.</div>
-          <div class="header-cell">Width</div>
-          <div class="header-cell">Height</div>
-          <div class="header-cell">Depth</div>
+          <div class="header-cell">ID</div>
+          <div class="header-cell description-col">Description</div>
           <div class="header-cell actions-col">Actions</div>
         </div>
       </th>
@@ -51,16 +72,17 @@
           <div class="bg-image" *ngIf="animatedView"></div>
 
           <div class="row-content">
-            <div class="name">{{ element.name || "Default Name" }}</div>
+            <div class="name">{{ element.name || "Unnamed Project" }}</div>
             <div class="details">
               <div class="cell">{{ element.id }}</div>
-              <div class="cell">{{ element.width }}</div>
-              <div class="cell">{{ element.height }}</div>
-              <div class="cell">{{ element.depth }}</div>
+              <div class="cell description-col">
+                {{ element.description || "-" }}
+              </div>
               <div class="actions">
                 <button
                   mat-icon-button
                   color="primary"
+                  matTooltip="Open"
                   (click)="openItem(element); $event.stopPropagation()"
                 >
                   <mat-icon>open_in_new</mat-icon>
@@ -68,6 +90,7 @@
                 <button
                   mat-icon-button
                   color="warn"
+                  matTooltip="Delete"
                   (click)="deleteItem(element); $event.stopPropagation()"
                 >
                   <mat-icon>delete</mat-icon>
@@ -75,6 +98,7 @@
                 <button
                   mat-icon-button
                   color="accent"
+                  matTooltip="Archive"
                   (click)="archiveItem(element); $event.stopPropagation()"
                 >
                   <mat-icon>archive</mat-icon>
@@ -89,13 +113,17 @@
     <tr mat-header-row *matHeaderRowDef="['row']"></tr>
     <tr mat-row *matRowDef="let row; columns: ['row']"></tr>
   </table>
+
+  <!-- Paginator -->
+
+  <!-- Saját pagination - SIMA HTML GOMBOK -->
 </div>
 
 <!-- Detail View Overlay -->
 <div class="detail-overlay" *ngIf="showDetail" (click)="closeDetail()">
   <div class="detail-card" (click)="$event.stopPropagation()">
     <div class="detail-header">
-      <h2>{{ selectedItem?.name || "Item Details" }}</h2>
+      <h2>{{ selectedItem?.name || "Project Details" }}</h2>
       <button mat-icon-button (click)="closeDetail()">
         <mat-icon>close</mat-icon>
       </button>
@@ -103,7 +131,7 @@
 
     <div class="detail-content" *ngIf="selectedItem">
       <div class="detail-image">
-        <img src="https://picsum.photos/400/300" alt="Item preview" />
+        <img src="https://picsum.photos/400/300" alt="Project preview" />
       </div>
 
       <div class="detail-info">
@@ -113,28 +141,25 @@
         </div>
 
         <div class="info-row">
-          <span class="label">Width:</span>
-          <span class="value">{{ selectedItem.width }} mm</span>
+          <span class="label">Name:</span>
+          <span class="value">{{ selectedItem.name }}</span>
         </div>
 
         <div class="info-row">
-          <span class="label">Height:</span>
-          <span class="value">{{ selectedItem.height }} mm</span>
-        </div>
-
-        <div class="info-row">
-          <span class="label">Depth:</span>
-          <span class="value">{{ selectedItem.depth }} mm</span>
-        </div>
-
-        <div class="info-row" *ngIf="selectedItem.material">
-          <span class="label">Material:</span>
-          <span class="value">{{ selectedItem.material }}</span>
-        </div>
-
-        <div class="info-row" *ngIf="selectedItem.description">
           <span class="label">Description:</span>
-          <span class="value">{{ selectedItem.description }}</span>
+          <span class="value">{{
+            selectedItem.description || "No description"
+          }}</span>
+        </div>
+
+        <div class="info-row" *ngIf="selectedItem.createdAt">
+          <span class="label">Created:</span>
+          <span class="value">{{ selectedItem.createdAt }}</span>
+        </div>
+
+        <div class="info-row" *ngIf="selectedItem.updatedAt">
+          <span class="label">Updated:</span>
+          <span class="value">{{ selectedItem.updatedAt }}</span>
         </div>
       </div>
 
@@ -146,7 +171,7 @@
         <button
           mat-raised-button
           color="accent"
-          (click)="archiveItem(selectedItem); $event.stopPropagation()"
+          (click)="archiveItem(selectedItem!); $event.stopPropagation()"
         >
           <mat-icon>archive</mat-icon>
           Archive
@@ -154,7 +179,7 @@
         <button
           mat-raised-button
           color="warn"
-          (click)="deleteItem(selectedItem); $event.stopPropagation()"
+          (click)="deleteItem(selectedItem!); $event.stopPropagation()"
         >
           <mat-icon>delete</mat-icon>
           Delete

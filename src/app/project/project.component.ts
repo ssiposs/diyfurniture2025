@@ -1,11 +1,12 @@
-import { Component, OnInit } from "@angular/core";
-import { Body } from "../furnituremodel/furnituremodels";
-import { FurnituremodelService } from "../furnituremodel/furnituremodel.service";
+import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Subject } from "rxjs";
+import { takeUntil, finalize } from "rxjs/operators";
+import { PageEvent } from "@angular/material/paginator";
 import {
-  BomItem,
-  BomService,
-  FurnitureBackendItem,
-} from "../services/bom.service";
+  Project,
+  ProjectService,
+  PagedResponse,
+} from "../services/project.service";
 
 @Component({
   selector: "app-project",
@@ -13,82 +14,136 @@ import {
   styleUrls: ["./project.component.scss"],
   standalone: false,
 })
-export class ProjectComponent implements OnInit {
-  private bodies: Body[] = [];
-  private selectedBody: number = 0;
-
+export class ProjectComponent implements OnInit, OnDestroy {
+  // State
   loading = false;
   error = "";
-  animatedView = true; // Toggle az animált nézethez
-  selectedItem: any = null; // A kiválasztott item a detail view-hoz
-  showDetail = false; // Detail view megjelenítése
+  animatedView = true;
 
-  constructor(
-    private furniture: FurnituremodelService,
-    private bom: BomService
-  ) {}
+  // Detail view
+  selectedItem: Project | null = null;
+  showDetail = false;
 
-  // Változás: mostantól csak egy oszlop van
-  public displayedColumns: string[] = ["row"];
-  public dataSource: any[] = [];
+  // Table
+  displayedColumns: string[] = ["row"];
+  dataSource: Project[] = [];
 
-  ngOnInit() {
-    this.loading = true;
+  // Pagination
+  currentPage = 0;
+  pageSize = 10;
+  totalElements = 0;
+  totalPages = 0;
+  pageSizeOptions = [5, 10, 25, 50];
 
-    this.bom.getMockBomForProject().subscribe({
-      next: (data) => {
-        this.dataSource = data;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = "Something went wrong when fetching data.";
-        this.loading = false;
-      },
-    });
+  private destroy$ = new Subject<void>();
+
+  constructor(private projectService: ProjectService) {}
+
+  ngOnInit(): void {
+    this.loadProjects();
   }
 
-  toggleView() {
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadProjects(): void {
+    this.loading = true;
+    this.error = "";
+
+    this.projectService
+      .getProjectsPaged(this.currentPage, this.pageSize)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (this.loading = false))
+      )
+      .subscribe({
+        next: (response: PagedResponse<Project>) => {
+          console.log("Full response:", response); // <-- ADD
+          console.log("totalElements:", response.totalElements); // <-- ADD
+
+          this.dataSource = response.content;
+          this.totalElements = response.totalElements;
+          this.totalPages = response.totalPages;
+          this.currentPage = response.number;
+        },
+        error: (err) => {
+          console.error("Failed to load projects:", err);
+          this.error = "Something went wrong when fetching projects.";
+        },
+      });
+  }
+
+  onPageChange(event: PageEvent): void {
+    console.log("Page event:", event); // Debug
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadProjects();
+  }
+
+  retry(): void {
+    this.loadProjects();
+  }
+
+  toggleView(): void {
     this.animatedView = !this.animatedView;
   }
 
-  openItem(item: any) {
+  openItem(item: Project): void {
     console.log("open:", item);
     this.selectedItem = item;
     this.showDetail = true;
   }
 
-  closeDetail() {
+  closeDetail(): void {
     this.showDetail = false;
     this.selectedItem = null;
   }
 
-  deleteItem(item: any) {
-    console.log("delete:", item);
-
-    if (confirm(`Are you sure you want to delete item ${item.id}?`)) {
-      this.dataSource = this.dataSource.filter((i) => i.id !== item.id);
-
-      // Ha a törölt item van megnyitva, zárjuk be a detail view-t
-      if (this.selectedItem?.id === item.id) {
-        this.closeDetail();
-      }
+  deleteItem(item: Project): void {
+    if (!confirm(`Are you sure you want to delete "${item.name}"?`)) {
+      return;
     }
+
+    this.projectService
+      .deleteProject(item.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          // Reload current page after deletion
+          // If current page becomes empty, go to previous page
+          if (this.dataSource.length === 1 && this.currentPage > 0) {
+            this.currentPage--;
+          }
+          this.loadProjects();
+
+          if (this.selectedItem?.id === item.id) {
+            this.closeDetail();
+          }
+        },
+        error: (err) => {
+          console.error("Failed to delete project:", err);
+          alert("Failed to delete project. Please try again.");
+        },
+      });
   }
 
-  archiveItem(item: any) {
+  archiveItem(item: Project): void {
     console.log("archive:", item);
-    alert(`Archiving item ${item.id}`);
-  }
 
-  retry() {
-    this.error = "";
-    this.loading = true;
-    this.ngOnInit(); // újratölti az adatokat
-  }
-
-  private loadBomForSelected(): void {
-    this.bom.getBomForProject().subscribe((items) => {
-      this.dataSource = items;
-    });
+    this.projectService
+      .archiveProject(item.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.loadProjects(); // Reload to reflect changes
+          alert(`Project "${item.name}" has been archived.`);
+        },
+        error: (err) => {
+          console.error("Failed to archive project:", err);
+          alert("Failed to archive project. Please try again.");
+        },
+      });
   }
 }
