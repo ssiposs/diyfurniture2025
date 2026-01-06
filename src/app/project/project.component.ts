@@ -11,6 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AddItemDialogComponent } from './add-item-dialog/add-item-dialog.component';
 import { ProjectService } from "../services/project.service";
 import { CreateProjectDto } from "../models/project.models";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 @Component({
   selector: "app-project",
@@ -35,6 +36,7 @@ export class ProjectComponent implements OnInit {
     private bom: BomService,
     private dialog: MatDialog,
     private projectService: ProjectService,
+    private snackBar: MatSnackBar
   ) {}
 
   // Változás: mostantól csak egy oszlop van
@@ -71,19 +73,6 @@ export class ProjectComponent implements OnInit {
     this.selectedItem = null;
   }
 
-  deleteItem(item: any) {
-    console.log("delete:", item);
-
-    if (confirm(`Are you sure you want to delete item ${item.id}?`)) {
-      this.dataSource = this.dataSource.filter((i) => i.id !== item.id);
-
-      // Ha a törölt item van megnyitva, zárjuk be a detail view-t
-      if (this.selectedItem?.id === item.id) {
-        this.closeDetail();
-      }
-    }
-  }
-
   archiveItem(item: any) {
     console.log("archive:", item);
     alert(`Archiving item ${item.id}`);
@@ -113,5 +102,39 @@ export class ProjectComponent implements OnInit {
         this.dataSource = [result, ...this.dataSource];
       }
     });
+  }
+
+
+  async deleteItem(item: any) {
+    // 1. Confirm with the user
+    if (confirm(`Are you sure you want to delete item "${item.name || item.id}"?`)) {
+      
+      try {
+        // 2. Call the backend
+        await this.projectService.deleteProject(item.id);
+
+        // 3. On Success: Update the UI (Remove from table)
+        this.dataSource = this.dataSource.filter((i) => i.id !== item.id);
+
+        // 4. Close the detail view if the deleted item was currently open
+        if (this.selectedItem?.id === item.id) {
+          this.closeDetail();
+        }
+
+        // 5. Show Success Feedback
+        this.snackBar.open('Project deleted successfully', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+        });
+
+      } catch (error) {
+        // 6. Handle Error
+        this.snackBar.open('Failed to delete project. Please try again.', 'Close', {
+          duration: 4000,
+          panelClass: ['error-snackbar'], // Ensure you have styles for this or remove panelClass
+        });
+      }
+    }
   }
 }

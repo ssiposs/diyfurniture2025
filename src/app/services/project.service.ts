@@ -25,4 +25,14 @@ export class ProjectService {
       throw error; // Rethrow to handle it in the component
     }
   }
+
+  async deleteProject(id: number): Promise<void> {
+    try {
+      const url = `${API_URL}${API_ENDPOINTS.PROJECTS.BASE}/${id}`;
+      await axios.delete(url);
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      throw error;
+    }
+  }
 }
