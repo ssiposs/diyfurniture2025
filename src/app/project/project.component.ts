@@ -104,33 +104,14 @@ export class ProjectComponent implements OnInit {
   openAddDialog() {
     const dialogRef = this.dialog.open(AddItemDialogComponent, {
       width: '600px',
-      disableClose: true // Prevents closing by clicking outside
+      disableClose: true
     });
-
+  
     dialogRef.afterClosed().subscribe(result => {
+      // If we get a result, it means the API call was ALREADY successful
       if (result) {
-        // Here you would normally call your backend service to save the new item
-        console.log('New Item Data:', result);
-        this.saveNewProject(result);
+        this.dataSource = [result, ...this.dataSource];
       }
     });
-  }
-
-  async saveNewProject(itemData: CreateProjectDto) {
-    this.isSaving = true; // Optional: use this to show a spinner
-    try {
-      // 1. Call the backend
-      const newItem = await this.projectService.createProject(itemData);
-
-      // 2. Add the returned item (with ID) to the table
-      // We create a new array reference so Angular updates the view
-      this.dataSource = [newItem, ...this.dataSource];
-      
-      console.log('Successfully saved:', newItem);
-    } catch (error) {
-      this.error = 'Failed to save the new project. Please try again.';
-    } finally {
-      this.isSaving = false;
-    }
   }
 }

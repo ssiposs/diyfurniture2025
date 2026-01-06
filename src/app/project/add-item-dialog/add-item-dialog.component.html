@@ -1,14 +1,15 @@
 <h2 mat-dialog-title>Add New Item</h2>
 
 <mat-dialog-content>
+  <div *ngIf="errorMessage" class="error-banner">
+    <mat-icon>error</mat-icon>
+    {{ errorMessage }}
+  </div>
+
   <form [formGroup]="itemForm" class="add-item-form">
-    
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Name</mat-label>
-      <input matInput formControlName="name" placeholder="Ex. Cabinet A">
-      <mat-error *ngIf="itemForm.get('name')?.hasError('required')">
-        Name is required
-      </mat-error>
+      <input matInput formControlName="name">
     </mat-form-field>
 
     <div class="row">
@@ -32,13 +33,22 @@
       <mat-label>Description</mat-label>
       <textarea matInput formControlName="description"></textarea>
     </mat-form-field>
-
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()">Cancel</button>
-  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!itemForm.valid">
-    Create
+  <button mat-button (click)="onCancel()" [disabled]="isSaving">Cancel</button>
+  
+  <button 
+    mat-raised-button 
+    color="primary" 
+    (click)="onSubmit()" 
+    [disabled]="!itemForm.valid || isSaving">
+    
+    <span *ngIf="!isSaving">Create</span>
+    <span *ngIf="isSaving" class="flex-center">
+      <mat-spinner diameter="20" color="accent"></mat-spinner>
+      Saving...
+    </span>
   </button>
 </mat-dialog-actions>
