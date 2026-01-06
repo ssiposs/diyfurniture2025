@@ -354,6 +354,14 @@ mat-toolbar {
   }
 }
 
+.fab-add-button {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  z-index: 100; // Ensure it is above the table
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

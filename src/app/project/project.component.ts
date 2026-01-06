@@ -7,6 +7,11 @@ import {
   FurnitureBackendItem,
 } from "../services/bom.service";
 
+import { MatDialog } from '@angular/material/dialog';
+import { AddItemDialogComponent } from './add-item-dialog/add-item-dialog.component';
+import { ProjectService } from "../services/project.service";
+import { CreateProjectDto } from "../models/project.models";
+
 @Component({
   selector: "app-project",
   templateUrl: "./project.component.html",
@@ -18,6 +23,8 @@ export class ProjectComponent implements OnInit {
   private selectedBody: number = 0;
 
   loading = false;
+  isSaving = false;
+
   error = "";
   animatedView = true; // Toggle az animált nézethez
   selectedItem: any = null; // A kiválasztott item a detail view-hoz
@@ -25,7 +32,9 @@ export class ProjectComponent implements OnInit {
 
   constructor(
     private furniture: FurnituremodelService,
-    private bom: BomService
+    private bom: BomService,
+    private dialog: MatDialog,
+    private projectService: ProjectService,
   ) {}
 
   // Változás: mostantól csak egy oszlop van
@@ -89,6 +98,20 @@ export class ProjectComponent implements OnInit {
   private loadBomForSelected(): void {
     this.bom.getBomForProject().subscribe((items) => {
       this.dataSource = items;
+    });
+  }
+
+  openAddDialog() {
+    const dialogRef = this.dialog.open(AddItemDialogComponent, {
+      width: '600px',
+      disableClose: true
+    });
+  
+    dialogRef.afterClosed().subscribe(result => {
+      // If we get a result, it means the API call was ALREADY successful
+      if (result) {
+        this.dataSource = [result, ...this.dataSource];
+      }
     });
   }
 }
