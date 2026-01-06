@@ -7,6 +7,9 @@ import {
   FurnitureBackendItem,
 } from "../services/bom.service";
 
+import { MatDialog } from '@angular/material/dialog';
+import { AddItemDialogComponent } from './add-item-dialog/add-item-dialog.component';
+
 @Component({
   selector: "app-project",
   templateUrl: "./project.component.html",
@@ -25,7 +28,8 @@ export class ProjectComponent implements OnInit {
 
   constructor(
     private furniture: FurnituremodelService,
-    private bom: BomService
+    private bom: BomService,
+    private dialog: MatDialog
   ) {}
 
   // Változás: mostantól csak egy oszlop van
@@ -90,5 +94,30 @@ export class ProjectComponent implements OnInit {
     this.bom.getBomForProject().subscribe((items) => {
       this.dataSource = items;
     });
+  }
+
+  openAddDialog() {
+    const dialogRef = this.dialog.open(AddItemDialogComponent, {
+      width: '600px',
+      disableClose: true // Prevents closing by clicking outside
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Here you would normally call your backend service to save the new item
+        console.log('New Item Data:', result);
+        this.addItemToTable(result);
+      }
+    });
+  }
+
+  private addItemToTable(newItemData: any) {
+    const newItem = {
+      id: Math.floor(Math.random() * 1000), // Mock ID
+      ...newItemData
+    };
+    
+    // We must re-assign the array to trigger Angular change detection for the table
+    this.dataSource = [newItem, ...this.dataSource];
   }
 }

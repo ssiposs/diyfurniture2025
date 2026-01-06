@@ -1,0 +1,44 @@
+<h2 mat-dialog-title>Add New Item</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="itemForm" class="add-item-form">
+    
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" placeholder="Ex. Cabinet A">
+      <mat-error *ngIf="itemForm.get('name')?.hasError('required')">
+        Name is required
+      </mat-error>
+    </mat-form-field>
+
+    <div class="row">
+      <mat-form-field appearance="outline">
+        <mat-label>Width (mm)</mat-label>
+        <input matInput type="number" formControlName="width">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Height (mm)</mat-label>
+        <input matInput type="number" formControlName="height">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Depth (mm)</mat-label>
+        <input matInput type="number" formControlName="depth">
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description"></textarea>
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!itemForm.valid">
+    Create
+  </button>
+</mat-dialog-actions>
