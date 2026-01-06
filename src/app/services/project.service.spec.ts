@@ -54,4 +54,29 @@ describe('ProjectService', () => {
     // We expect the promise to be rejected
     await expectAsync(service.createProject(mockInput)).toBeRejectedWith(mockError);
   });
+
+
+  it('deleteProject should call axios delete with correct URL', async () => {
+    // 1. Arrange
+    const projectId = 123;
+    // Mock axios.delete to return a successful promise (void)
+    const axiosSpy = spyOn(axios, 'delete').and.returnValue(Promise.resolve({ data: {} }));
+
+    // 2. Act
+    await service.deleteProject(projectId);
+
+    // 3. Assert
+    const expectedUrl = `${API_URL}${API_ENDPOINTS.PROJECTS.BASE}/${projectId}`;
+    expect(axiosSpy).toHaveBeenCalledWith(expectedUrl);
+  });
+
+  it('deleteProject should throw error when API fails', async () => {
+    // 1. Arrange
+    const projectId = 123;
+    const mockError = new Error('Not Found');
+    spyOn(axios, 'delete').and.returnValue(Promise.reject(mockError));
+
+    // 2. Act & Assert
+    await expectAsync(service.deleteProject(projectId)).toBeRejectedWith(mockError);
+  });
 });

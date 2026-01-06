@@ -59,9 +59,7 @@ describe('AddItemDialogComponent', () => {
   it('form should be valid when filled correctly', () => {
     component.itemForm.patchValue({
       name: 'Test Project',
-      width: 100,
-      height: 200,
-      depth: 300
+      description: 'A sample project',
     });
     expect(component.itemForm.valid).toBeTrue();
   });
@@ -69,7 +67,7 @@ describe('AddItemDialogComponent', () => {
   // SUCCESS SCENARIO
   it('should call service, show toast, and close dialog on success', fakeAsync(() => {
     // Arrange
-    const mockData = { name: 'Test', width: 10, height: 10, depth: 10 };
+    const mockData = { name: 'Test', description: 'Desc' };
     const mockResponse = { id: 123, ...mockData };
     
     component.itemForm.patchValue(mockData);
