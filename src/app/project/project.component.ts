@@ -8,6 +8,12 @@ import {
   PagedResponse,
 } from "../services/project.service";
 
+import { MatDialog } from "@angular/material/dialog";
+import { AddItemDialogComponent } from "./add-item-dialog/add-item-dialog.component";
+
+import { BomService } from "../services/bom.service";
+import { FurnituremodelService } from "../furnituremodel/furnituremodel.service";
+
 @Component({
   selector: "app-project",
   templateUrl: "./project.component.html",
@@ -17,6 +23,7 @@ import {
 export class ProjectComponent implements OnInit, OnDestroy {
   // State
   loading = false;
+  isSaving = false;
   error = "";
   animatedView = true;
 
@@ -37,7 +44,12 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  constructor(private projectService: ProjectService) {}
+  constructor(
+    private furniture: FurnituremodelService,
+    private bom: BomService,
+    private dialog: MatDialog,
+    private projectService: ProjectService
+  ) {}
 
   ngOnInit(): void {
     this.loadProjects();
@@ -60,8 +72,8 @@ export class ProjectComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (response: PagedResponse<Project>) => {
-          console.log("Full response:", response); // <-- ADD
-          console.log("totalElements:", response.totalElements); // <-- ADD
+          console.log("Full response:", response);
+          console.log("totalElements:", response.totalElements);
 
           this.dataSource = response.content;
           this.totalElements = response.totalElements;
@@ -76,7 +88,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   onPageChange(event: PageEvent): void {
-    console.log("Page event:", event); // Debug
+    console.log("Page event:", event);
     this.currentPage = event.pageIndex;
     this.pageSize = event.pageSize;
     this.loadProjects();
@@ -111,8 +123,6 @@ export class ProjectComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Reload current page after deletion
-          // If current page becomes empty, go to previous page
           if (this.dataSource.length === 1 && this.currentPage > 0) {
             this.currentPage--;
           }
@@ -137,7 +147,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.loadProjects(); // Reload to reflect changes
+          this.loadProjects();
           alert(`Project "${item.name}" has been archived.`);
         },
         error: (err) => {
@@ -145,5 +155,18 @@ export class ProjectComponent implements OnInit, OnDestroy {
           alert("Failed to archive project. Please try again.");
         },
       });
+  }
+
+  openAddDialog(): void {
+    const dialogRef = this.dialog.open(AddItemDialogComponent, {
+      width: "600px",
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.dataSource = [result, ...this.dataSource];
+      }
+    });
   }
 }

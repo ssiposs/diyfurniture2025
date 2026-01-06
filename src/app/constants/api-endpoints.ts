@@ -14,3 +14,5 @@ export const API_ENDPOINTS = {
     VERSIONS: (projectId: number) => `/projects/${projectId}/versions`,
   },
 } as const;
+
+export const API_URL = "http://localhost/api";

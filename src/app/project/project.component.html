@@ -13,6 +13,14 @@
 </mat-toolbar>
 
 <div class="page-container">
+  <button 
+  mat-fab 
+  color="primary" 
+  class="fab-add-button" 
+  (click)="openAddDialog()"
+  matTooltip="Add New Project Item">
+  <mat-icon>add</mat-icon>
+</button>
   <!-- Loading State -->
   <div *ngIf="loading" class="info-box loading">Loading projects...</div>
 
