@@ -9,6 +9,8 @@ import {
 
 import { MatDialog } from '@angular/material/dialog';
 import { AddItemDialogComponent } from './add-item-dialog/add-item-dialog.component';
+import { ProjectService } from "../services/project.service";
+import { CreateProjectDto } from "../models/project.models";
 
 @Component({
   selector: "app-project",
@@ -21,6 +23,8 @@ export class ProjectComponent implements OnInit {
   private selectedBody: number = 0;
 
   loading = false;
+  isSaving = false;
+
   error = "";
   animatedView = true; // Toggle az animált nézethez
   selectedItem: any = null; // A kiválasztott item a detail view-hoz
@@ -29,7 +33,8 @@ export class ProjectComponent implements OnInit {
   constructor(
     private furniture: FurnituremodelService,
     private bom: BomService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private projectService: ProjectService,
   ) {}
 
   // Változás: mostantól csak egy oszlop van
@@ -106,18 +111,26 @@ export class ProjectComponent implements OnInit {
       if (result) {
         // Here you would normally call your backend service to save the new item
         console.log('New Item Data:', result);
-        this.addItemToTable(result);
+        this.saveNewProject(result);
       }
     });
   }
 
-  private addItemToTable(newItemData: any) {
-    const newItem = {
-      id: Math.floor(Math.random() * 1000), // Mock ID
-      ...newItemData
-    };
-    
-    // We must re-assign the array to trigger Angular change detection for the table
-    this.dataSource = [newItem, ...this.dataSource];
+  async saveNewProject(itemData: CreateProjectDto) {
+    this.isSaving = true; // Optional: use this to show a spinner
+    try {
+      // 1. Call the backend
+      const newItem = await this.projectService.createProject(itemData);
+
+      // 2. Add the returned item (with ID) to the table
+      // We create a new array reference so Angular updates the view
+      this.dataSource = [newItem, ...this.dataSource];
+      
+      console.log('Successfully saved:', newItem);
+    } catch (error) {
+      this.error = 'Failed to save the new project. Please try again.';
+    } finally {
+      this.isSaving = false;
+    }
   }
 }
