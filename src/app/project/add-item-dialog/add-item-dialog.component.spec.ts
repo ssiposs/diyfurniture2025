@@ -59,9 +59,7 @@ describe('AddItemDialogComponent', () => {
   it('form should be valid when filled correctly', () => {
     component.itemForm.patchValue({
       name: 'Test Project',
-      width: 100,
-      height: 200,
-      depth: 300
+     description: 'A sample project'
     });
     expect(component.itemForm.valid).toBeTrue();
   });
@@ -69,7 +67,7 @@ describe('AddItemDialogComponent', () => {
   // SUCCESS SCENARIO
   it('should call service, show toast, and close dialog on success', fakeAsync(() => {
     // Arrange
-    const mockData = { name: 'Test', width: 10, height: 10, depth: 10 };
+    const mockData = { name: 'Test', description: "Sample" };
     const mockResponse = { id: 123, ...mockData };
     
     component.itemForm.patchValue(mockData);
@@ -95,7 +93,7 @@ describe('AddItemDialogComponent', () => {
   // ERROR SCENARIO
   it('should keep dialog open and show error message on failure', fakeAsync(() => {
     // Arrange
-    component.itemForm.patchValue({ name: 'Fail', width: 10, height: 10, depth: 10 });
+    component.itemForm.patchValue({ name: 'Fail', description: 'This will fail' });
     // Mock the Promise rejection
     mockProjectService.createProject.and.returnValue(Promise.reject('Server Error'));
 
