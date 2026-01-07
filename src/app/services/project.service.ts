@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { Observable, throwError } from "rxjs";
 import { catchError, retry, map } from "rxjs/operators";
 import { environment } from "../../environments/environment";
-import { CreateProjectDto, ProjectItem } from "../models/project.models";
+import { CreateProjectDto, ProjectItem, ProjectVersionResponse, UpdateProjectRequest, UpdateProjectResponse } from "../models/project.models";
 
 export interface Project {
   id: number;
@@ -69,6 +69,26 @@ export class ProjectService {
     return this.http
       .get<Project>(`${this.baseUrl}/${id}`)
       .pipe(catchError(this.handleError));
+  }
+
+  // PUT /projects/:id
+  updateProject(id: number, request: UpdateProjectRequest): Observable<UpdateProjectResponse> {
+    return this.http
+      .put<UpdateProjectResponse>(`${this.baseUrl}/${id}`, request)
+      .pipe(catchError(this.handleError));
+  }
+
+  // GET /projects/:id/versions
+  getProjectVersions(id: number): Observable<ProjectVersionResponse[]> {
+    return this.http
+      .get<ProjectVersionResponse[]>(`${this.baseUrl}/${id}/versions`)
+      .pipe(catchError(this.handleError));
+  }
+
+  // POST /projects/:id/versions/:versionId/restore
+  restoreVersion(projectId: number, versionId: number): Observable<Project> {
+    // This matches the standard REST pattern for restore
+    return this.http.post<Project>(`${this.baseUrl}/${projectId}/versions/${versionId}/restore`, {});
   }
 
   // DELETE /projects/:id

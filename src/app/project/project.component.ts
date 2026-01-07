@@ -13,6 +13,7 @@ import { AddItemDialogComponent } from "./add-item-dialog/add-item-dialog.compon
 
 import { BomService } from "../services/bom.service";
 import { FurnituremodelService } from "../furnituremodel/furnituremodel.service";
+import { EditProjectDialogComponent } from "./edit-item-dialog/edit-item-dialog.component";
 
 @Component({
   selector: "app-project",
@@ -166,6 +167,25 @@ export class ProjectComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.dataSource = [result, ...this.dataSource];
+      }
+    });
+  }
+
+  openEditDialog(item: Project): void {
+    const dialogRef = this.dialog.open(EditProjectDialogComponent, {
+      width: '800px', // Wider to accommodate the version table
+      data: { project: item },
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Refresh the list to show updated name/description
+        this.loadProjects(); 
+        // If the detail view was open, update the selected item too
+        if (this.selectedItem?.id === result.id) {
+          this.selectedItem = result;
+        }
       }
     });
   }

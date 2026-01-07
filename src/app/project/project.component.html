@@ -90,10 +90,10 @@
                 <button
                   mat-icon-button
                   color="primary"
-                  matTooltip="Open"
-                  (click)="openItem(element); $event.stopPropagation()"
+                  matTooltip="Edit"
+                  (click)="openEditDialog(element); $event.stopPropagation()"
                 >
-                  <mat-icon>open_in_new</mat-icon>
+                  <mat-icon>edit</mat-icon>
                 </button>
                 <button
                   mat-icon-button
@@ -172,10 +172,10 @@
       </div>
 
       <div class="detail-actions">
-        <button mat-raised-button color="primary" (click)="closeDetail()">
-          <mat-icon>edit</mat-icon>
-          Edit
-        </button>
+      <button mat-raised-button color="primary" (click)="openEditDialog(selectedItem!)">
+        <mat-icon>edit</mat-icon>
+        Edit
+      </button>
         <button
           mat-raised-button
           color="accent"
