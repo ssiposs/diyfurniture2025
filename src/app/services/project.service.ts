@@ -4,6 +4,8 @@ import { Observable, throwError } from "rxjs";
 import { catchError, retry, map } from "rxjs/operators";
 import { environment } from "../../environments/environment";
 import { CreateProjectDto, ProjectItem, ProjectVersionResponse, UpdateProjectRequest, UpdateProjectResponse } from "../models/project.models";
+import { API_ENDPOINTS, API_URL } from "../constants/api-endpoints";
+import axios from "axios";
 
 export interface Project {
   id: number;
@@ -33,11 +35,15 @@ export class ProjectService {
 
   constructor(private http: HttpClient) {}
 
-  // POST /projects - Create new project (HttpClient verzió)
-  createProject(item: CreateProjectDto): Observable<Project> {
-    return this.http
-      .post<Project>(this.baseUrl, item)
-      .pipe(catchError(this.handleError));
+  async createProject(item: CreateProjectDto): Promise<ProjectItem> {
+    try {
+      const url = API_URL + API_ENDPOINTS.PROJECTS.BASE;
+      const response = await axios.post<ProjectItem>(url, item);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating project:', error);
+      throw error; // Rethrow to handle it in the component
+    }
   }
 
   // GET /projects - csak a content tömböt adja vissza
@@ -91,11 +97,15 @@ export class ProjectService {
     return this.http.post<Project>(`${this.baseUrl}/${projectId}/versions/${versionId}/restore`, {});
   }
 
-  // DELETE /projects/:id
-  deleteProject(id: number): Observable<void> {
-    return this.http
-      .delete<void>(`${this.baseUrl}/${id}`)
-      .pipe(catchError(this.handleError));
+
+  async deleteProject(id: number): Promise<void> {
+    try {
+      const url = `${API_URL}${API_ENDPOINTS.PROJECTS.BASE}/${id}`;
+      await axios.delete(url);
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      throw error;
+    }
   }
 
   // POST /projects/:id/archive
