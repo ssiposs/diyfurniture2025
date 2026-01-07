@@ -97,11 +97,15 @@ export class ProjectService {
     return this.http.post<Project>(`${this.baseUrl}/${projectId}/versions/${versionId}/restore`, {});
   }
 
-  // DELETE /projects/:id
-  deleteProject(id: number): Observable<void> {
-    return this.http
-      .delete<void>(`${this.baseUrl}/${id}`)
-      .pipe(catchError(this.handleError));
+
+  async deleteProject(id: number): Promise<void> {
+    try {
+      const url = `${API_URL}${API_ENDPOINTS.PROJECTS.BASE}/${id}`;
+      await axios.delete(url);
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      throw error;
+    }
   }
 
   // POST /projects/:id/archive
