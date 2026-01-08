@@ -26,8 +26,10 @@ import { Draw2DSupportService } from "./lib/draw/draw2-dsupport.service";
 import { MatSelectChange } from "@angular/material/select";
 import { ProjectService } from "../services/project.service";
 import {
+  BodyDto,
   CreateProjectDto,
   ProjectDetailResponse,
+  UpdateProjectRequest,
 } from "../models/project.models";
 import {
   AddItemDialogComponent,
@@ -35,6 +37,8 @@ import {
 } from "../project/add-item-dialog/add-item-dialog.component";
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from "@angular/router";
+
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 interface FrontType {
   value: string;
@@ -62,8 +66,9 @@ export class Draw2dComponent implements AfterViewInit {
     private modelEvent: ModelchangeService,
     private projectService: ProjectService,
     private dialog: MatDialog,
-    private route: ActivatedRoute, // ÚJ
-    private router: Router // ÚJ
+    private route: ActivatedRoute,
+    private router: Router,
+    private snackBar: MatSnackBar
   ) {}
 
   @ViewChild("canvas") public canvas?: ElementRef;
@@ -85,6 +90,8 @@ export class Draw2dComponent implements AfterViewInit {
 
   public currentProjectId: number | null = null;
   public currentProjectName: string | null = null;
+  public currentVersionNumber: number | null = null;
+  public hasUnsavedChanges: boolean = false;
 
   private selectedElement$: BehaviorSubject<SelectedFurniture | null> =
     new BehaviorSubject<SelectedFurniture | null>(null);
@@ -200,6 +207,12 @@ export class Draw2dComponent implements AfterViewInit {
       const projectId = params["id"];
       if (projectId) {
         this.loadProject(Number(projectId));
+      }
+    });
+
+    this.modelEvent.subject$.subscribe(() => {
+      if (this.currentProjectId) {
+        this.hasUnsavedChanges = true;
       }
     });
   }
@@ -452,6 +465,15 @@ export class Draw2dComponent implements AfterViewInit {
   public saveProject(): void {
     const bodies = this.modelManager.getBodiesForApi();
 
+    if (this.currentProjectId) {
+      this.updateExistingProject(bodies);
+      return;
+    }
+
+    this.createNewProject(bodies);
+  }
+
+  private createNewProject(bodies: BodyDto[]): void {
     const dialogData: AddItemDialogData = { bodies };
 
     const dialogRef = this.dialog.open(AddItemDialogComponent, {
@@ -463,8 +485,48 @@ export class Draw2dComponent implements AfterViewInit {
       if (result) {
         this.currentProjectId = result.id;
         this.currentProjectName = result.name;
+        this.currentVersionNumber = 1; // Első verzió
+        this.hasUnsavedChanges = false;
       }
     });
+  }
+
+  private updateExistingProject(bodies: BodyDto[]): void {
+    if (!this.currentProjectId || !this.currentProjectName) return;
+
+    const request: UpdateProjectRequest = {
+      name: this.currentProjectName,
+      description: "",
+      bodies: bodies,
+    };
+
+    this.projectService
+      .updateProject(this.currentProjectId, request)
+      .subscribe({
+        next: (response) => {
+          // Verzió számot növeljük
+          this.currentVersionNumber = (this.currentVersionNumber || 0) + 1;
+          this.hasUnsavedChanges = false;
+
+          this.snackBar.open(
+            `Saved as version ${this.currentVersionNumber}!`,
+            "Close",
+            {
+              duration: 3000,
+              horizontalPosition: "right",
+              verticalPosition: "top",
+              panelClass: ["success-snackbar"],
+            }
+          );
+        },
+        error: (err) => {
+          console.error("Update failed", err);
+          this.snackBar.open("Failed to save", "Close", {
+            duration: 3000,
+            panelClass: ["error-snackbar"],
+          });
+        },
+      });
   }
 
   // Új metódus - projekt betöltése
@@ -476,23 +538,24 @@ export class Draw2dComponent implements AfterViewInit {
         this.currentProjectId = project.id;
         this.currentProjectName = project.name;
 
-        // Legutolsó version bodies-ának betöltése
+        // Legutolsó version
         const latestVersion = project.versions[project.versions.length - 1];
-        if (latestVersion && latestVersion.bodies.length > 0) {
-          // Töröljük a lokális IndexedDB-t és memóriát
-          this.modelManager.clearMemory();
-          // Betöltjük az API-ból jött bodies-okat
-          this.modelManager.loadBodiesFromProject(latestVersion.bodies);
-          this.drawRectangles();
+        if (latestVersion) {
+          this.currentVersionNumber = latestVersion.versionNumber; // ÚJ
+
+          if (latestVersion.bodies.length > 0) {
+            this.modelManager.clearMemory();
+            this.modelManager.loadBodiesFromProject(latestVersion.bodies);
+            this.drawRectangles();
+          }
         }
 
+        this.hasUnsavedChanges = false; // Frissen betöltve, nincs unsaved
         this.isLoading = false;
       },
       error: (err) => {
         console.error("Failed to load project:", err);
         this.isLoading = false;
-        // Opcionális: visszanavigálás
-        // this.router.navigate(['/project']);
       },
     });
   }

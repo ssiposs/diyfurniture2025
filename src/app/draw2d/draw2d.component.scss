@@ -43,9 +43,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 16px;
+  padding: 8px 16px;
   font-size: 14px;
   color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
 
   mat-icon {
     font-size: 20px;
@@ -53,8 +55,41 @@
     height: 20px;
   }
 
+  .project-name {
+    font-weight: 500;
+  }
+
+  .version-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+  }
+
+  .unsaved-badge {
+    color: #ffab40;
+    font-size: 12px;
+    font-weight: 500;
+    animation: pulse 2s infinite;
+  }
+
   &.unsaved {
+    border: 1px solid #ffab40;
+  }
+
+  &.new-project {
     color: #999;
     font-style: italic;
+    background: transparent;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }

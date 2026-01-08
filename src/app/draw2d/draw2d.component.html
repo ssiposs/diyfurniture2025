@@ -45,14 +45,19 @@
   @if (isLoading) {
   <mat-spinner diameter="24"></mat-spinner>
   } @else if (currentProjectName) {
-  <div class="project-info">
+  <div class="project-info" [class.unsaved]="hasUnsavedChanges">
     <mat-icon>folder</mat-icon>
-    <span>{{ currentProjectName }}</span>
+    <span class="project-name">{{ currentProjectName }}</span>
+    @if (currentVersionNumber) {
+    <span class="version-badge">v{{ currentVersionNumber }}</span>
+    } @if (hasUnsavedChanges) {
+    <span class="unsaved-badge">● Unsaved</span>
+    }
   </div>
   } @else {
-  <div class="project-info unsaved">
+  <div class="project-info new-project">
     <mat-icon>folder_off</mat-icon>
-    <span>Unsaved project</span>
+    <span>New project</span>
   </div>
   }
 </mat-toolbar>

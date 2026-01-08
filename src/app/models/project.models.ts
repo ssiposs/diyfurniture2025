@@ -17,6 +17,7 @@ export interface ProjectItem extends CreateProjectDto {
 export interface UpdateProjectRequest {
   name: string;
   description?: string;
+  bodies?: BodyDto[];
 }
 
 export interface UpdateProjectResponse {
