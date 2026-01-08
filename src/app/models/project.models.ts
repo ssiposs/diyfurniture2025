@@ -1,11 +1,18 @@
+export interface BodyDto {
+  width: string;
+  heigth: string; // Backend így várja (typo-val)
+  depth: string;
+}
+
 export interface CreateProjectDto {
-    name: string;
-    description?: string;
-  }
-  
-  export interface ProjectItem extends CreateProjectDto {
-    id: number;
-  }
+  name: string;
+  description?: string;
+  bodies?: BodyDto[];
+}
+
+export interface ProjectItem extends CreateProjectDto {
+  id: number;
+}
 
 export interface UpdateProjectRequest {
   name: string;

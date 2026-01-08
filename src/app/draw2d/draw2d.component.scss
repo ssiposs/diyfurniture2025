@@ -1,16 +1,23 @@
 .pos {
-  text-align: right; width: 60px;
+  text-align: right;
+  width: 60px;
 }
 
-.canv{
-  width: 100%; height: calc(100vh - 146px);float: left; margin-top: 0px;
+.canv {
+  width: 100%;
+  height: calc(100vh - 146px);
+  float: left;
+  margin-top: 0px;
 }
 
 .property {
-  width: 10%; height: 80%;float: left; margin-top: 55px;
+  width: 10%;
+  height: 80%;
+  float: left;
+  margin-top: 55px;
 }
 
-#property-size{
+#property-size {
   width: 150px;
 }
 
@@ -26,4 +33,28 @@
 
 .draw-action-buttons {
   margin-left: 40px;
+}
+
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.project-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  font-size: 14px;
+  color: #fff;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &.unsaved {
+    color: #999;
+    font-style: italic;
+  }
 }

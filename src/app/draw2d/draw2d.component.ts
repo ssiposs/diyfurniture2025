@@ -1,5 +1,5 @@
-import { ModelchangeService } from './lib/eventhandling/modelchange.service';
-import { EventHandlerManagerService } from './lib/eventhandling/event-handler-manager.service';
+import { ModelchangeService } from "./lib/eventhandling/modelchange.service";
+import { EventHandlerManagerService } from "./lib/eventhandling/event-handler-manager.service";
 import {
   Component,
   Input,
@@ -8,14 +8,29 @@ import {
   ViewChild,
   SimpleChanges,
   HostListener,
-} from '@angular/core';
-import { BehaviorSubject, from, fromEvent, Observable, of } from 'rxjs';
-import { DiyFurnitureMouseEvent } from './lib/model/my-mouse-event.model';
-import { FurnitureBody, FurnitureElement, FurnitureElementType, Rectangle, SelectedFurniture, HorizontalSplit, VerticalSplit } from './lib/model/furniture-body.model';
-import { FurnitureModelManagerService } from './lib/model/furniture-model-manager.service';
-import { EventTranslateService } from './lib/eventhandling/event-translate.service';
-import { Draw2DSupportService } from './lib/draw/draw2-dsupport.service';
-import { MatSelectChange } from '@angular/material/select';
+} from "@angular/core";
+import { BehaviorSubject, from, fromEvent, Observable, of } from "rxjs";
+import { DiyFurnitureMouseEvent } from "./lib/model/my-mouse-event.model";
+import {
+  FurnitureBody,
+  FurnitureElement,
+  FurnitureElementType,
+  Rectangle,
+  SelectedFurniture,
+  HorizontalSplit,
+  VerticalSplit,
+} from "./lib/model/furniture-body.model";
+import { FurnitureModelManagerService } from "./lib/model/furniture-model-manager.service";
+import { EventTranslateService } from "./lib/eventhandling/event-translate.service";
+import { Draw2DSupportService } from "./lib/draw/draw2-dsupport.service";
+import { MatSelectChange } from "@angular/material/select";
+import { ProjectService } from "../services/project.service";
+import { CreateProjectDto } from "../models/project.models";
+import {
+  AddItemDialogComponent,
+  AddItemDialogData,
+} from "../project/add-item-dialog/add-item-dialog.component";
+import { MatDialog } from "@angular/material/dialog";
 
 interface FrontType {
   value: string;
@@ -23,16 +38,16 @@ interface FrontType {
 }
 
 @Component({
-    selector: 'app-draw2d',
-    templateUrl: './draw2d.component.html',
-    styleUrls: ['./draw2d.component.scss'],
-    providers: [
-        FurnitureModelManagerService,
-        Draw2DSupportService,
-        EventTranslateService,
-        EventHandlerManagerService,
-    ],
-    standalone: false
+  selector: "app-draw2d",
+  templateUrl: "./draw2d.component.html",
+  styleUrls: ["./draw2d.component.scss"],
+  providers: [
+    FurnitureModelManagerService,
+    Draw2DSupportService,
+    EventTranslateService,
+    EventHandlerManagerService,
+  ],
+  standalone: false,
 })
 export class Draw2dComponent implements AfterViewInit {
   constructor(
@@ -40,15 +55,17 @@ export class Draw2dComponent implements AfterViewInit {
     private drawSupport: Draw2DSupportService,
     private eventTranslate: EventTranslateService,
     private eventHandler: EventHandlerManagerService,
-    private modelEvent: ModelchangeService
+    private modelEvent: ModelchangeService,
+    private projectService: ProjectService,
+    private dialog: MatDialog
   ) {}
 
-  @ViewChild('canvas') public canvas?: ElementRef;
+  @ViewChild("canvas") public canvas?: ElementRef;
 
   private width = 400;
   private height = 400;
-  @Input('lineWidth') lineWidth: number = 1;
-  public figureType: string = 'crop_square';
+  @Input("lineWidth") lineWidth: number = 1;
+  public figureType: string = "crop_square";
 
   private cx!: CanvasRenderingContext2D;
 
@@ -58,6 +75,9 @@ export class Draw2dComponent implements AfterViewInit {
 
   private _selectedElementBody: FurnitureBody | null = null;
 
+  public currentProjectId: number | null = null;
+  public currentProjectName: string | null = null;
+
   private selectedElement$: BehaviorSubject<SelectedFurniture | null> =
     new BehaviorSubject<SelectedFurniture | null>(null);
 
@@ -66,28 +86,32 @@ export class Draw2dComponent implements AfterViewInit {
     return FurnitureElementType[color];
   }
 
-  public selectFrontType(elem: MatSelectChange){
-    if(this.selectedElement == undefined){
+  public selectFrontType(elem: MatSelectChange) {
+    if (this.selectedElement == undefined) {
       return;
     }
-    this.selectedElement.origin.type = this.mapStringToFurnitureElementType(elem.value);
-    this.selectedElement.furnitureType = this.mapStringToFurnitureElementType(elem.value);
+    this.selectedElement.origin.type = this.mapStringToFurnitureElementType(
+      elem.value
+    );
+    this.selectedElement.furnitureType = this.mapStringToFurnitureElementType(
+      elem.value
+    );
     this.modelManager.refresh(this.selectedElement.origin);
   }
 
   frontTypes: FrontType[] = [
-    {value: 'door', viewValue: 'Door'},
-    {value: 'drawer', viewValue: 'Drawer'},
+    { value: "door", viewValue: "Door" },
+    { value: "drawer", viewValue: "Drawer" },
   ];
 
-  selectedFrontTypes : string | undefined;
+  selectedFrontTypes: string | undefined;
 
   public set selectedElement(selectedElement: SelectedFurniture | null) {
     this.selectedElement$.next(selectedElement);
   }
 
   public changeBodyDetails(): void {
-    if(this._selectedElementBody!=null) {
+    if (this._selectedElementBody != null) {
       this.modelManager.refresh(this._selectedElementBody as FurnitureElement);
     }
     this.drawRectangles();
@@ -106,7 +130,10 @@ export class Draw2dComponent implements AfterViewInit {
     const heightChanged = desiredHeight !== origin.height;
 
     if (heightChanged) {
-      this.modelManager.resizeElementHeightPreservingPercent(origin, desiredHeight);
+      this.modelManager.resizeElementHeightPreservingPercent(
+        origin,
+        desiredHeight
+      );
     }
     if (widthChanged) {
       this.modelManager.resizeElementWidthNoOverlap(origin, desiredWidth);
@@ -139,9 +166,9 @@ export class Draw2dComponent implements AfterViewInit {
   public ngAfterViewInit() {
     this.eventHandler.initServices(this.drawSupport, this.modelManager);
     const canvasEl: HTMLCanvasElement = this.canvas?.nativeElement;
-    const ctx = canvasEl.getContext('2d');
+    const ctx = canvasEl.getContext("2d");
     if (!ctx) {
-      console.error('2D canvas context not available');
+      console.error("2D canvas context not available");
       return;
     }
     this.cx = ctx;
@@ -162,7 +189,7 @@ export class Draw2dComponent implements AfterViewInit {
     this.captureEvents(canvasEl);
   }
 
-  @HostListener('mousewheel', ['$event'])
+  @HostListener("mousewheel", ["$event"])
   public scroll(event: MouseEvent) {
     if (this.cx != null && event instanceof WheelEvent) {
       var scale =
@@ -196,16 +223,16 @@ export class Draw2dComponent implements AfterViewInit {
 
   private getCursor(): string {
     switch (this.figureType) {
-      case 'select':
-        return 'grab';
-      case 'move':
-        return 'move';
-      case 'split_rectangle_horizontal':
-        return 'n-resize';
-      case 'split_rectangle_vertical':
-        return 'w-resize';
+      case "select":
+        return "grab";
+      case "move":
+        return "move";
+      case "split_rectangle_horizontal":
+        return "n-resize";
+      case "split_rectangle_vertical":
+        return "w-resize";
     }
-    return 'default';
+    return "default";
   }
   public captureEvents(canvasEl: HTMLCanvasElement): void {
     this.selectedElement$.subscribe((event) => {
@@ -215,39 +242,45 @@ export class Draw2dComponent implements AfterViewInit {
         this.selectedFrontTypes = undefined;
         return;
       }
-      this.selectedFrontTypes = FurnitureElementType[event.furnitureType].toString().toLocaleLowerCase();
+      this.selectedFrontTypes = FurnitureElementType[event.furnitureType]
+        .toString()
+        .toLocaleLowerCase();
       this._selectedElementBody = this.modelManager.findBody(event.origin);
     });
 
-    fromEvent<MouseEvent>(canvasEl, 'mousemove').subscribe((event) => {
+    fromEvent<MouseEvent>(canvasEl, "mousemove").subscribe((event) => {
       const rect = canvasEl.getBoundingClientRect();
       var posX = event.clientX - rect.left;
       var posY = event.clientY - rect.top;
       var a = this.toWorld(posX, posY);
 
-      this.debugLog('Mouse move event:', {
+      this.debugLog("Mouse move event:", {
         clientX: event.clientX,
         clientY: event.clientY,
         canvasX: posX,
         canvasY: posY,
         worldX: a.x,
         worldY: a.y,
-        figureType: this.figureType
+        figureType: this.figureType,
       });
 
       // Check for split lines first (in move mode)
-      if (this.figureType === 'move') {
+      if (this.figureType === "move") {
         var split = this.modelManager.findSelectedSplit(a.x, a.y);
-        this.debugLog('Split detection result:', split);
+        this.debugLog("Split detection result:", split);
         if (split != null && this.canvas && this.canvas.nativeElement) {
-          this.debugLog('Split found, setting cursor');
-          const cursorType = split.split instanceof HorizontalSplit ? 'n-resize' : 'w-resize';
-          this.debugLog('Setting cursor to:', cursorType);
+          this.debugLog("Split found, setting cursor");
+          const cursorType =
+            split.split instanceof HorizontalSplit ? "n-resize" : "w-resize";
+          this.debugLog("Setting cursor to:", cursorType);
           try {
             this.canvas.nativeElement.style.cursor = cursorType;
-            this.debugLog('Cursor set successfully to:', this.canvas.nativeElement.style.cursor);
+            this.debugLog(
+              "Cursor set successfully to:",
+              this.canvas.nativeElement.style.cursor
+            );
           } catch (error) {
-            this.debugLog('Error setting cursor:', error);
+            this.debugLog("Error setting cursor:", error);
           }
           this.highlightSplit(split);
           return;
@@ -255,13 +288,13 @@ export class Draw2dComponent implements AfterViewInit {
       }
 
       var elem = this.modelManager.findSelectedElement(a.x, a.y);
-      this.debugLog('Element detection result:', elem);
+      this.debugLog("Element detection result:", elem);
       if (elem == null && this.canvas != undefined) {
-        this.canvas.nativeElement.style.cursor = 'default';
+        this.canvas.nativeElement.style.cursor = "default";
         this.clearHighlight();
       } else if (this.canvas != undefined) {
         this.canvas.nativeElement.style.cursor = this.getCursor();
-        if (this.figureType === 'move' && elem != null) {
+        if (this.figureType === "move" && elem != null) {
           this.highlightElement(elem);
         } else {
           this.clearHighlight();
@@ -281,7 +314,7 @@ export class Draw2dComponent implements AfterViewInit {
   public ngOnChanges(changes: SimpleChanges): void {
     for (const propName in changes) {
       if (changes.hasOwnProperty(propName)) {
-        if (propName === 'lineWidth') {
+        if (propName === "lineWidth") {
           const chng = changes[propName];
           console.log(chng);
           if (chng.currentValue && !chng.firstChange) {
@@ -295,7 +328,7 @@ export class Draw2dComponent implements AfterViewInit {
             );
           }
         }
-        if (propName === 'figureType') {
+        if (propName === "figureType") {
           const chng = changes[propName];
           console.log(chng);
           if (chng.currentValue && !chng.firstChange) {
@@ -351,11 +384,14 @@ export class Draw2dComponent implements AfterViewInit {
     console.log(`[DEBUG] ${message}`, data);
   }
 
-  private highlightSplit(split: { element: FurnitureElement, split: HorizontalSplit | VerticalSplit }): void {
+  private highlightSplit(split: {
+    element: FurnitureElement;
+    split: HorizontalSplit | VerticalSplit;
+  }): void {
     if (!this.canvas) return;
 
     // Set red color for highlighting
-    this.cx.strokeStyle = '#ff0000';
+    this.cx.strokeStyle = "#ff0000";
     this.cx.lineWidth = 3;
 
     // Draw highlight for the split line
@@ -383,7 +419,7 @@ export class Draw2dComponent implements AfterViewInit {
     if (!this.canvas) return;
 
     // Set red color for highlighting
-    this.cx.strokeStyle = '#ff0000';
+    this.cx.strokeStyle = "#ff0000";
     this.cx.lineWidth = 3;
 
     // Always use absolute coordinates so highlights align with drawn elements
@@ -396,5 +432,23 @@ export class Draw2dComponent implements AfterViewInit {
   private clearHighlight(): void {
     // Redraw everything to clear any highlights
     this.drawSupport.drawExistingElements();
+  }
+
+  public saveProject(): void {
+    const bodies = this.modelManager.getBodiesForApi();
+
+    const dialogData: AddItemDialogData = { bodies };
+
+    const dialogRef = this.dialog.open(AddItemDialogComponent, {
+      width: "400px",
+      data: dialogData,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.currentProjectId = result.id;
+        this.currentProjectName = result.name;
+      }
+    });
   }
 }
