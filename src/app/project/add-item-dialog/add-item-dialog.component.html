@@ -26,8 +26,8 @@
     mat-raised-button 
     color="primary" 
     (click)="onSubmit()" 
-    [disabled]="!itemForm.valid || isSaving">
-    
+    [disabled]="!itemForm.valid || isSaving"
+    id="create-project-btn">
     <span *ngIf="!isSaving">Create</span>
     <span *ngIf="isSaving" class="flex-center">
       <mat-spinner diameter="20" color="accent"></mat-spinner>
