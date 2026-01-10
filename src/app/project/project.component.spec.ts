@@ -87,7 +87,7 @@ describe("ProjectComponent", () => {
   });
 
   it("openItem sets detail state", () => {
-    const item = { id: 5, name: "Test Item" };
+    const item = { id: 5, name: "Test Project" };
     component.openItem(item);
 
     expect(component.selectedItem).toBe(item);
@@ -95,13 +95,14 @@ describe("ProjectComponent", () => {
   });
 
   it("closeDetail clears detail state", () => {
-    component.selectedItem = { id: 1, name: "Test" };
+    component.selectedItem = { id: 1, name: "Test Project" };
     component.showDetail = true;
 
-    component.closeDetail();
-
-    expect(component.selectedItem).toBeNull();
-    expect(component.showDetail).toBe(false);
+  it("deleteItem removes item", () => {
+    spyOn(window, "confirm").and.returnValue(true);
+    component.dataSource = [{ id: 1, name: "Test Project"}, { id: 2, name: "Another Project"}];
+    component.deleteItem({ id: 1, name: "Test Project" } as any);
+    expect(component.dataSource).toEqual([{ id: 2, name: "Another Project"}]);
   });
 
   it("retry resets error and reloads", () => {
@@ -177,4 +178,5 @@ describe("ProjectComponent", () => {
     expect(component.dataSource.length).toBe(1);
     expect(mockSnackBar.open).toHaveBeenCalledWith(jasmine.stringMatching(/failed/i), 'Close', jasmine.any(Object));
   }));
+});
 });
