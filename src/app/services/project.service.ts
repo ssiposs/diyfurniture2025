@@ -3,7 +3,14 @@ import { HttpClient } from "@angular/common/http";
 import { Observable, throwError } from "rxjs";
 import { catchError, retry, map } from "rxjs/operators";
 import { environment } from "../../environments/environment";
-import { CreateProjectDto, ProjectItem, ProjectVersionResponse, UpdateProjectRequest, UpdateProjectResponse } from "../models/project.models";
+import {
+  CreateProjectDto,
+  ProjectItem,
+  ProjectVersionResponse,
+  UpdateProjectRequest,
+  UpdateProjectResponse,
+  ProjectDetailResponse,
+} from "../models/project.models";
 import { API_ENDPOINTS, API_URL } from "../constants/api-endpoints";
 import axios from "axios";
 
@@ -41,7 +48,7 @@ export class ProjectService {
       const response = await axios.post<ProjectItem>(url, item);
       return response.data;
     } catch (error) {
-      console.error('Error creating project:', error);
+      console.error("Error creating project:", error);
       throw error; // Rethrow to handle it in the component
     }
   }
@@ -78,7 +85,10 @@ export class ProjectService {
   }
 
   // PUT /projects/:id
-  updateProject(id: number, request: UpdateProjectRequest): Observable<UpdateProjectResponse> {
+  updateProject(
+    id: number,
+    request: UpdateProjectRequest
+  ): Observable<UpdateProjectResponse> {
     return this.http
       .put<UpdateProjectResponse>(`${this.baseUrl}/${id}`, request)
       .pipe(catchError(this.handleError));
@@ -94,16 +104,18 @@ export class ProjectService {
   // POST /projects/:id/versions/:versionId/restore
   restoreVersion(projectId: number, versionId: number): Observable<Project> {
     // This matches the standard REST pattern for restore
-    return this.http.post<Project>(`${this.baseUrl}/${projectId}/versions/${versionId}/restore`, {});
+    return this.http.post<Project>(
+      `${this.baseUrl}/${projectId}/versions/${versionId}/restore`,
+      {}
+    );
   }
-
 
   async deleteProject(id: number): Promise<void> {
     try {
       const url = `${API_URL}${API_ENDPOINTS.PROJECTS.BASE}/${id}`;
       await axios.delete(url);
     } catch (error) {
-      console.error('Error deleting project:', error);
+      console.error("Error deleting project:", error);
       throw error;
     }
   }
@@ -120,6 +132,12 @@ export class ProjectService {
     return throwError(() => error);
   }
 
+  getProjectDetail(id: number): Observable<ProjectDetailResponse> {
+    return this.http
+      .get<ProjectDetailResponse>(`${this.baseUrl}/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
   // Mock verzió teszteléshez
   getMockProjects(): Observable<Project[]> {
     const shouldFail = Math.random() < 0.3;
@@ -132,12 +150,20 @@ export class ProjectService {
         }
 
         observer.next([
-          { id: 1, name: "Living Room Set", description: "Modern furniture collection" },
+          {
+            id: 1,
+            name: "Living Room Set",
+            description: "Modern furniture collection",
+          },
           { id: 2, name: "Office Desk", description: "Ergonomic workspace" },
           { id: 3, name: "Kitchen Cabinet", description: "Storage solution" },
           { id: 4, name: "Bedroom Wardrobe", description: "Spacious closet" },
           { id: 5, name: "Bookshelf", description: "Wall-mounted shelving" },
-          { id: 6, name: "Dining Table", description: "Extendable table for 6-8" },
+          {
+            id: 6,
+            name: "Dining Table",
+            description: "Extendable table for 6-8",
+          },
           { id: 7, name: "TV Stand", description: "Entertainment center" },
           { id: 8, name: "Shoe Rack", description: "Entryway organizer" },
         ]);
