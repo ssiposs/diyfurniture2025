@@ -34,7 +34,7 @@ export class AddItemDialogComponent {
     });
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.itemForm.invalid) return;
 
     this.isSaving = true;
@@ -45,26 +45,24 @@ export class AddItemDialogComponent {
       bodies: this.data?.bodies ?? [],
     };
 
-    this.projectService.createProject(payload).subscribe({
-      next: (newItem) => {
-        this.snackBar.open("Project created successfully!", "Close", {
-          duration: 3000,
-          horizontalPosition: "right",
-          verticalPosition: "top",
-          panelClass: ["success-snackbar"],
-        });
-        this.dialogRef.close(newItem);
-      },
-      error: (error) => {
-        console.error(error);
-        this.errorMessage = "Failed to create project. Please try again.";
-        this.isSaving = false;
-      },
-      complete: () => {
-        this.isSaving = false;
-      },
-    });
+    try {
+      const newItem = await this.projectService.createProject(payload); // Promise-t ad vissza axios
+      this.snackBar.open("Project created successfully!", "Close", {
+        duration: 3000,
+        horizontalPosition: "right",
+        verticalPosition: "top",
+        panelClass: ["success-snackbar"],
+      });
+      this.dialogRef.close(newItem);
+    } catch (error) {
+      console.error(error);
+      this.errorMessage = "Failed to create project. Please try again.";
+      this.isSaving = false;
+    } finally {
+      this.isSaving = false;
+    }
   }
+
   onCancel() {
     this.dialogRef.close();
   }

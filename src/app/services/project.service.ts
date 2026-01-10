@@ -3,7 +3,14 @@ import { HttpClient } from "@angular/common/http";
 import { Observable, throwError } from "rxjs";
 import { catchError, retry, map } from "rxjs/operators";
 import { environment } from "../../environments/environment";
-import { CreateProjectDto, ProjectItem, ProjectVersionResponse, UpdateProjectRequest, UpdateProjectResponse } from "../models/project.models";
+import {
+  CreateProjectDto,
+  ProjectItem,
+  ProjectVersionResponse,
+  UpdateProjectRequest,
+  UpdateProjectResponse,
+  ProjectDetailResponse,
+} from "../models/project.models";
 import { API_ENDPOINTS, API_URL } from "../constants/api-endpoints";
 import axios from "axios";
 
@@ -35,15 +42,11 @@ export class ProjectService {
 
   constructor(private http: HttpClient) {}
 
-  async createProject(item: CreateProjectDto): Promise<ProjectItem> {
-    try {
-      const url = API_URL + API_ENDPOINTS.PROJECTS.BASE;
-      const response = await axios.post<ProjectItem>(url, item);
-      return response.data;
-    } catch (error) {
-      console.error('Error creating project:', error);
-      throw error; // Rethrow to handle it in the component
-    }
+  createProject(item: CreateProjectDto): Observable<ProjectItem> {
+    const url = API_URL + API_ENDPOINTS.PROJECTS.BASE;
+    return this.http
+      .post<ProjectItem>(url, item)
+      .pipe(catchError(this.handleError));
   }
 
   // GET /projects - csak a content tömböt adja vissza
@@ -103,13 +106,12 @@ export class ProjectService {
     );
   }
 
-
   async deleteProject(id: number): Promise<void> {
     try {
       const url = `${API_URL}${API_ENDPOINTS.PROJECTS.BASE}/${id}`;
       await axios.delete(url);
     } catch (error) {
-      console.error('Error deleting project:', error);
+      console.error("Error deleting project:", error);
       throw error;
     }
   }
