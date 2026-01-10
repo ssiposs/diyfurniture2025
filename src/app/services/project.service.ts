@@ -42,11 +42,15 @@ export class ProjectService {
 
   constructor(private http: HttpClient) {}
 
-  createProject(item: CreateProjectDto): Observable<ProjectItem> {
-    const url = API_URL + API_ENDPOINTS.PROJECTS.BASE;
-    return this.http
-      .post<ProjectItem>(url, item)
-      .pipe(catchError(this.handleError));
+  async createProject(item: CreateProjectDto): Promise<ProjectItem> {
+    try {
+      const url = API_URL + API_ENDPOINTS.PROJECTS.BASE;
+      const response = await axios.post<ProjectItem>(url, item);
+      return response.data;
+    } catch (error) {
+      console.error("Error creating project:", error);
+      throw error; // Rethrow to handle it in the component
+    }
   }
 
   // GET /projects - csak a content tömböt adja vissza
