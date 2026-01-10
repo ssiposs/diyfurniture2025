@@ -9,7 +9,6 @@ import {
 } from "../services/project.service";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
-
 import { MatDialog } from "@angular/material/dialog";
 import { AddItemDialogComponent } from "./add-item-dialog/add-item-dialog.component";
 

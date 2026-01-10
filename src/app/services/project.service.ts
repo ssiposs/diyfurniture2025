@@ -3,14 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { Observable, throwError } from "rxjs";
 import { catchError, retry, map } from "rxjs/operators";
 import { environment } from "../../environments/environment";
-import {
-  CreateProjectDto,
-  ProjectDetailResponse,
-  ProjectItem,
-  ProjectVersionResponse,
-  UpdateProjectRequest,
-  UpdateProjectResponse,
-} from "../models/project.models";
+import { CreateProjectDto, ProjectItem, ProjectVersionResponse, UpdateProjectRequest, UpdateProjectResponse } from "../models/project.models";
 import { API_ENDPOINTS, API_URL } from "../constants/api-endpoints";
 import axios from "axios";
 
@@ -48,7 +41,7 @@ export class ProjectService {
       const response = await axios.post<ProjectItem>(url, item);
       return response.data;
     } catch (error) {
-      console.error("Error creating project:", error);
+      console.error('Error creating project:', error);
       throw error; // Rethrow to handle it in the component
     }
   }
@@ -110,12 +103,13 @@ export class ProjectService {
     );
   }
 
+
   async deleteProject(id: number): Promise<void> {
     try {
       const url = `${API_URL}${API_ENDPOINTS.PROJECTS.BASE}/${id}`;
       await axios.delete(url);
     } catch (error) {
-      console.error("Error deleting project:", error);
+      console.error('Error deleting project:', error);
       throw error;
     }
   }
