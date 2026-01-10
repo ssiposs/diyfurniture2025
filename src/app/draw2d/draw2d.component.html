@@ -42,7 +42,9 @@
 
   <span class="toolbar-spacer"></span>
 
-  @if (currentProjectName) {
+  @if (isLoading) {
+  <mat-spinner diameter="24"></mat-spinner>
+  } @else if (currentProjectName) {
   <div class="project-info">
     <mat-icon>folder</mat-icon>
     <span>{{ currentProjectName }}</span>

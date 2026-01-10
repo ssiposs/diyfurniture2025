@@ -16,6 +16,7 @@ import { AddItemDialogComponent } from "./add-item-dialog/add-item-dialog.compon
 import { BomService } from "../services/bom.service";
 import { FurnituremodelService } from "../furnituremodel/furnituremodel.service";
 import { EditProjectDialogComponent } from "./edit-item-dialog/edit-item-dialog.component";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-project",
@@ -52,6 +53,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
     private bom: BomService,
     private dialog: MatDialog,
     private projectService: ProjectService,
+    private router: Router,
     private snackBar: MatSnackBar
 
   ) {}
@@ -113,6 +115,11 @@ export class ProjectComponent implements OnInit, OnDestroy {
     this.showDetail = true;
   }
 
+  openDraw(item: Project): void {
+    console.log("openDraw:", item);
+    this.router.navigate(["/draw", item.id]);
+  }
+
   closeDetail(): void {
     this.showDetail = false;
     this.selectedItem = null;
@@ -151,15 +158,15 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   openEditDialog(item: Project): void {
     const dialogRef = this.dialog.open(EditProjectDialogComponent, {
-      width: '800px', // Wider to accommodate the version table
+      width: "800px", // Wider to accommodate the version table
       data: { project: item },
-      disableClose: true
+      disableClose: true,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         // Refresh the list to show updated name/description
-        this.loadProjects(); 
+        this.loadProjects();
         // If the detail view was open, update the selected item too
         if (this.selectedItem?.id === result.id) {
           this.selectedItem = result;

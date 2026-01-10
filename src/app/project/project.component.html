@@ -13,15 +13,16 @@
 </mat-toolbar>
 
 <div class="page-container">
-  <button 
-  mat-fab 
-  color="primary" 
-  class="fab-add-button" 
-  (click)="openAddDialog()"
-  matTooltip="Add New Project Item"
-  id="add-project-btn">
-  <mat-icon>add</mat-icon>
-</button>
+  <button
+    mat-fab
+    color="primary"
+    class="fab-add-button"
+    (click)="openAddDialog()"
+    matTooltip="Add New Project Item"
+  id="add-project-btn"
+  >
+    <mat-icon>add</mat-icon>
+  </button>
   <!-- Loading State -->
   <div *ngIf="loading" class="info-box loading">Loading projects...</div>
 
@@ -95,6 +96,15 @@
                   (click)="openEditDialog(element); $event.stopPropagation()"
                 >
                   <mat-icon>edit</mat-icon>
+                </button>
+
+                <button
+                  mat-icon-button
+                  color="accent"
+                  matTooltip="Open in Editor"
+                  (click)="openDraw(element); $event.stopPropagation()"
+                >
+                  <mat-icon>open_in_new</mat-icon>
                 </button>
                 <button
                   mat-icon-button
@@ -173,10 +183,14 @@
       </div>
 
       <div class="detail-actions">
-      <button mat-raised-button color="primary" (click)="openEditDialog(selectedItem!)">
-        <mat-icon>edit</mat-icon>
-        Edit
-      </button>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="openEditDialog(selectedItem!)"
+        >
+          <mat-icon>edit</mat-icon>
+          Edit
+        </button>
         <button
           mat-raised-button
           color="accent"

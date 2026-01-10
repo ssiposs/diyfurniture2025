@@ -15,7 +15,7 @@ import { Injectable } from "@angular/core";
 import { FurnituremodelService } from "src/app/furnituremodel/furnituremodel.service";
 import { Body } from "src/app/furnituremodel/furnituremodels";
 import { ModelchangeService } from "../eventhandling/modelchange.service";
-import { BodyDto } from "src/app/models/project.models";
+import { BodyDto, ProjectBodyDto } from "src/app/models/project.models";
 
 @Injectable()
 export class FurnitureModelManagerService {
@@ -616,6 +616,43 @@ export class FurnitureModelManagerService {
       }
     }
     return null;
+  }
+
+  public loadBodiesFromProject(bodies: ProjectBodyDto[]): void {
+    // Töröljük a meglévő elemeket (csak memóriából, nem IndexedDB-ből)
+    this.rectangles = [];
+
+    let startX = 50;
+    const startY = 50;
+    const gap = 30;
+
+    for (const body of bodies) {
+      const fb = new FurnitureBody(
+        0, // posX (relatív)
+        0, // posY (relatív)
+        body.width / 10, // width (mm -> canvas units)
+        body.heigth / 10, // height
+        body.depth, // depth
+        18, // thickness (default)
+        FurnitureElementType.BODY,
+        startX, // x (canvas pozíció)
+        startY, // y (canvas pozíció)
+        null, // parent
+        null, // split
+        body.id // id from backend
+      );
+
+      this.rectangles.push(fb);
+      startX += fb.width + gap; // Következő body mellé
+    }
+
+    this.eventManager.modelChanged();
+  }
+
+  // Összes elem törlése memóriából (IndexedDB nélkül)
+  public clearMemory(): void {
+    this.rectangles = [];
+    this.eventManager.modelChanged();
   }
 }
 function convertElem(arg0: any) {

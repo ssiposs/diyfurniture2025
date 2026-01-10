@@ -25,12 +25,16 @@ import { EventTranslateService } from "./lib/eventhandling/event-translate.servi
 import { Draw2DSupportService } from "./lib/draw/draw2-dsupport.service";
 import { MatSelectChange } from "@angular/material/select";
 import { ProjectService } from "../services/project.service";
-import { CreateProjectDto } from "../models/project.models";
+import {
+  CreateProjectDto,
+  ProjectDetailResponse,
+} from "../models/project.models";
 import {
   AddItemDialogComponent,
   AddItemDialogData,
 } from "../project/add-item-dialog/add-item-dialog.component";
 import { MatDialog } from "@angular/material/dialog";
+import { ActivatedRoute, Router } from "@angular/router";
 
 interface FrontType {
   value: string;
@@ -57,10 +61,14 @@ export class Draw2dComponent implements AfterViewInit {
     private eventHandler: EventHandlerManagerService,
     private modelEvent: ModelchangeService,
     private projectService: ProjectService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private route: ActivatedRoute, // ÚJ
+    private router: Router // ÚJ
   ) {}
 
   @ViewChild("canvas") public canvas?: ElementRef;
+
+  public isLoading = false;
 
   private width = 400;
   private height = 400;
@@ -187,6 +195,13 @@ export class Draw2dComponent implements AfterViewInit {
     this.drawSupport.init(this.selectedElement$);
 
     this.captureEvents(canvasEl);
+
+    this.route.params.subscribe((params) => {
+      const projectId = params["id"];
+      if (projectId) {
+        this.loadProject(Number(projectId));
+      }
+    });
   }
 
   @HostListener("mousewheel", ["$event"])
@@ -449,6 +464,36 @@ export class Draw2dComponent implements AfterViewInit {
         this.currentProjectId = result.id;
         this.currentProjectName = result.name;
       }
+    });
+  }
+
+  // Új metódus - projekt betöltése
+  private loadProject(projectId: number): void {
+    this.isLoading = true;
+
+    this.projectService.getProjectDetail(projectId).subscribe({
+      next: (project: ProjectDetailResponse) => {
+        this.currentProjectId = project.id;
+        this.currentProjectName = project.name;
+
+        // Legutolsó version bodies-ának betöltése
+        const latestVersion = project.versions[project.versions.length - 1];
+        if (latestVersion && latestVersion.bodies.length > 0) {
+          // Töröljük a lokális IndexedDB-t és memóriát
+          this.modelManager.clearMemory();
+          // Betöltjük az API-ból jött bodies-okat
+          this.modelManager.loadBodiesFromProject(latestVersion.bodies);
+          this.drawRectangles();
+        }
+
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error("Failed to load project:", err);
+        this.isLoading = false;
+        // Opcionális: visszanavigálás
+        // this.router.navigate(['/project']);
+      },
     });
   }
 }

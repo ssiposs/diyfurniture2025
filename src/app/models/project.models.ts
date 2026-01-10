@@ -34,3 +34,30 @@ export interface ProjectVersionResponse {
   name: string;
   description: string;
 }
+
+export interface ProjectBodyDto {
+  id: number;
+  width: number;
+  heigth: number; // Backend typo
+  depth: number;
+}
+
+export interface ProjectVersionDto {
+  id: number;
+  versionNumber: number;
+  savedAt: string;
+  versionNote: string;
+  name: string;
+  description: string;
+  bodies: ProjectBodyDto[];
+}
+
+export interface ProjectDetailResponse {
+  id: number;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  versions: ProjectVersionDto[];
+}
