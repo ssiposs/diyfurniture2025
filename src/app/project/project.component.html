@@ -13,15 +13,16 @@
 </mat-toolbar>
 
 <div class="page-container">
-  <button 
-  mat-fab 
-  color="primary" 
-  class="fab-add-button" 
-  (click)="openAddDialog()"
-  matTooltip="Add New Project Item"
-  id="add-project-btn">
-  <mat-icon>add</mat-icon>
-</button>
+  <button
+    mat-fab
+    color="primary"
+    class="fab-add-button"
+    (click)="openAddDialog()"
+    matTooltip="Add New Project Item"
+    id="add-project-btn"
+  >
+    <mat-icon>add</mat-icon>
+  </button>
   <!-- Loading State -->
   <div *ngIf="loading" class="info-box loading">Loading projects...</div>
 
@@ -138,75 +139,12 @@
 </div>
 
 <!-- Detail View Overlay -->
-<div class="detail-overlay" *ngIf="showDetail" (click)="closeDetail()">
-  <div class="detail-card" (click)="$event.stopPropagation()">
-    <div class="detail-header">
-      <h2>{{ selectedItem?.name || "Project Details" }}</h2>
-      <button mat-icon-button (click)="closeDetail()">
-        <mat-icon>close</mat-icon>
-      </button>
-    </div>
-
-    <div class="detail-content" *ngIf="selectedItem">
-      <div class="detail-image">
-        <img src="https://picsum.photos/400/300" alt="Project preview" />
-      </div>
-
-      <div class="detail-info">
-        <div class="info-row">
-          <span class="label">ID:</span>
-          <span class="value">{{ selectedItem.id }}</span>
-        </div>
-
-        <div class="info-row">
-          <span class="label">Name:</span>
-          <span class="value">{{ selectedItem.name }}</span>
-        </div>
-
-        <div class="info-row">
-          <span class="label">Description:</span>
-          <span class="value">{{
-            selectedItem.description || "No description"
-          }}</span>
-        </div>
-
-        <div class="info-row" *ngIf="selectedItem.createdAt">
-          <span class="label">Created:</span>
-          <span class="value">{{ selectedItem.createdAt }}</span>
-        </div>
-
-        <div class="info-row" *ngIf="selectedItem.updatedAt">
-          <span class="label">Updated:</span>
-          <span class="value">{{ selectedItem.updatedAt }}</span>
-        </div>
-      </div>
-
-      <div class="detail-actions">
-        <button
-          mat-raised-button
-          color="primary"
-          (click)="openEditDialog(selectedItem!)"
-        >
-          <mat-icon>edit</mat-icon>
-          Edit
-        </button>
-        <button
-          mat-raised-button
-          color="accent"
-          (click)="archiveItem(selectedItem!); $event.stopPropagation()"
-        >
-          <mat-icon>archive</mat-icon>
-          Archive
-        </button>
-        <button
-          mat-raised-button
-          color="warn"
-          (click)="deleteItem(selectedItem!); $event.stopPropagation()"
-        >
-          <mat-icon>delete</mat-icon>
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+<app-project-detail
+  [projectId]="selectedItem?.id ?? null"
+  [isOpen]="showDetail"
+  (closed)="closeDetail()"
+  (projectUpdated)="loadProjects()"
+  (projectDeleted)="loadProjects()"
+  (projectArchived)="loadProjects()"
+>
+</app-project-detail>

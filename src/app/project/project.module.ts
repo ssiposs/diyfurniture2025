@@ -7,11 +7,16 @@ import { ReactiveFormsModule } from "@angular/forms";
 import { AddItemDialogComponent } from "./add-item-dialog/add-item-dialog.component";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatTableModule } from "@angular/material/table";
-import { EditProjectDialogComponent } from './edit-item-dialog/edit-item-dialog.component';
-
+import { EditProjectDialogComponent } from "./edit-item-dialog/edit-item-dialog.component";
+import { ProjectDetailComponent } from "./project-detail/project-detail.component";
 
 @NgModule({
-  declarations: [ProjectComponent, AddItemDialogComponent, EditProjectDialogComponent],
+  declarations: [
+    ProjectComponent,
+    AddItemDialogComponent,
+    EditProjectDialogComponent,
+    ProjectDetailComponent,
+  ],
   imports: [
     CommonModule,
     MaterialModule,

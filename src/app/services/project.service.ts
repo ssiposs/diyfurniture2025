@@ -140,33 +140,333 @@ export class ProjectService {
 
   // Mock verzió teszteléshez
   getMockProjects(): Observable<Project[]> {
-    const shouldFail = Math.random() < 0.3;
-
     return new Observable((observer) => {
       setTimeout(() => {
-        if (shouldFail) {
-          observer.error(new Error("Network error: failed to fetch projects"));
-          return;
-        }
-
         observer.next([
           {
             id: 1,
             name: "Living Room Set",
             description: "Modern furniture collection",
+            createdAt: "2026-01-10T10:30:00.000000",
+            updatedAt: "2026-01-12T15:45:00.000000",
           },
-          { id: 2, name: "Office Desk", description: "Ergonomic workspace" },
-          { id: 3, name: "Kitchen Cabinet", description: "Storage solution" },
-          { id: 4, name: "Bedroom Wardrobe", description: "Spacious closet" },
-          { id: 5, name: "Bookshelf", description: "Wall-mounted shelving" },
+          {
+            id: 2,
+            name: "Office Desk",
+            description: "Ergonomic workspace",
+            createdAt: "2026-01-08T09:00:00.000000",
+            updatedAt: "2026-01-11T14:20:00.000000",
+          },
+          {
+            id: 3,
+            name: "Kitchen Cabinet",
+            description: "Storage solution",
+            createdAt: "2026-01-05T11:15:00.000000",
+            updatedAt: "2026-01-09T16:30:00.000000",
+          },
+          {
+            id: 4,
+            name: "Bedroom Wardrobe",
+            description: "Spacious closet",
+            createdAt: "2026-01-03T08:45:00.000000",
+            updatedAt: "2026-01-07T12:00:00.000000",
+          },
+          {
+            id: 5,
+            name: "Bookshelf",
+            description: "Wall-mounted shelving",
+            createdAt: "2026-01-02T14:00:00.000000",
+            updatedAt: "2026-01-06T10:15:00.000000",
+          },
           {
             id: 6,
             name: "Dining Table",
             description: "Extendable table for 6-8",
+            createdAt: "2025-12-28T09:30:00.000000",
+            updatedAt: "2026-01-04T11:45:00.000000",
           },
-          { id: 7, name: "TV Stand", description: "Entertainment center" },
-          { id: 8, name: "Shoe Rack", description: "Entryway organizer" },
+          {
+            id: 7,
+            name: "TV Stand",
+            description: "Entertainment center",
+            createdAt: "2025-12-25T16:00:00.000000",
+            updatedAt: "2026-01-02T13:30:00.000000",
+          },
+          {
+            id: 8,
+            name: "Shoe Rack",
+            description: "Entryway organizer",
+            createdAt: "2025-12-20T10:00:00.000000",
+            updatedAt: "2025-12-30T09:00:00.000000",
+          },
         ]);
+        observer.complete();
+      }, 800);
+    });
+  }
+
+  /**
+   * Mock project detail with versions and bodies
+   * Matches the actual API response from /api/projects/:id
+   */
+  getMockProjectDetail(id: number): Observable<ProjectDetailResponse> {
+    return new Observable((observer) => {
+      setTimeout(() => {
+        // Mock data based on the actual API response format
+        const mockDetails: Record<number, ProjectDetailResponse> = {
+          1: {
+            id: 1,
+            name: "Living Room Set",
+            description:
+              "Modern furniture collection with sofa, coffee table, and TV stand",
+            createdAt: "2026-01-10T10:30:00.000000",
+            updatedAt: "2026-01-12T15:45:00.000000",
+            deletedAt: null,
+            versions: [
+              {
+                id: 1,
+                versionNumber: 1,
+                savedAt: "2026-01-10T10:30:00.000000",
+                versionNote: "Initial version",
+                name: "Living Room Set",
+                description: "Modern furniture collection",
+                bodies: [
+                  { id: 1, width: 2200, heigth: 900, depth: 850 },
+                  { id: 2, width: 1200, heigth: 450, depth: 600 },
+                ],
+              },
+              {
+                id: 2,
+                versionNumber: 2,
+                savedAt: "2026-01-11T09:15:00.000000",
+                versionNote: "Added TV stand dimensions",
+                name: "Living Room Set",
+                description: "Modern furniture collection with TV stand",
+                bodies: [
+                  { id: 3, width: 2200, heigth: 900, depth: 850 },
+                  { id: 4, width: 1200, heigth: 450, depth: 600 },
+                  { id: 5, width: 1800, heigth: 550, depth: 400 },
+                ],
+              },
+              {
+                id: 3,
+                versionNumber: 3,
+                savedAt: "2026-01-12T15:45:00.000000",
+                versionNote: "Final adjustments",
+                name: "Living Room Set",
+                description:
+                  "Modern furniture collection with sofa, coffee table, and TV stand",
+                bodies: [
+                  { id: 6, width: 2400, heigth: 950, depth: 900 },
+                  { id: 7, width: 1200, heigth: 450, depth: 600 },
+                  { id: 8, width: 1800, heigth: 550, depth: 420 },
+                ],
+              },
+            ],
+          },
+          2: {
+            id: 2,
+            name: "Office Desk",
+            description: "Ergonomic workspace with adjustable height",
+            createdAt: "2026-01-08T09:00:00.000000",
+            updatedAt: "2026-01-11T14:20:00.000000",
+            deletedAt: null,
+            versions: [
+              {
+                id: 4,
+                versionNumber: 1,
+                savedAt: "2026-01-08T09:00:00.000000",
+                versionNote: "Initial version",
+                name: "Office Desk",
+                description: "Ergonomic workspace",
+                bodies: [{ id: 9, width: 1600, heigth: 750, depth: 800 }],
+              },
+              {
+                id: 5,
+                versionNumber: 2,
+                savedAt: "2026-01-11T14:20:00.000000",
+                versionNote: "Added drawer unit",
+                name: "Office Desk",
+                description: "Ergonomic workspace with adjustable height",
+                bodies: [
+                  { id: 10, width: 1600, heigth: 750, depth: 800 },
+                  { id: 11, width: 400, heigth: 600, depth: 500 },
+                ],
+              },
+            ],
+          },
+          3: {
+            id: 3,
+            name: "Kitchen Cabinet",
+            description: "Storage solution for modern kitchen",
+            createdAt: "2026-01-05T11:15:00.000000",
+            updatedAt: "2026-01-09T16:30:00.000000",
+            deletedAt: null,
+            versions: [
+              {
+                id: 6,
+                versionNumber: 1,
+                savedAt: "2026-01-05T11:15:00.000000",
+                versionNote: "Initial version",
+                name: "Kitchen Cabinet",
+                description: "Storage solution",
+                bodies: [],
+              },
+            ],
+          },
+          // Project with no versions (edge case)
+          4: {
+            id: 4,
+            name: "Bedroom Wardrobe",
+            description: "Spacious closet with sliding doors",
+            createdAt: "2026-01-03T08:45:00.000000",
+            updatedAt: "2026-01-07T12:00:00.000000",
+            deletedAt: null,
+            versions: [],
+          },
+          // Archived project
+          5: {
+            id: 5,
+            name: "Bookshelf",
+            description: "Wall-mounted shelving - archived",
+            createdAt: "2026-01-02T14:00:00.000000",
+            updatedAt: "2026-01-06T10:15:00.000000",
+            deletedAt: "2026-01-13T09:00:00.000000",
+            versions: [
+              {
+                id: 7,
+                versionNumber: 1,
+                savedAt: "2026-01-02T14:00:00.000000",
+                versionNote: "Initial version",
+                name: "Bookshelf",
+                description: "Wall-mounted shelving",
+                bodies: [
+                  { id: 12, width: 800, heigth: 2000, depth: 300 },
+                  { id: 13, width: 800, heigth: 2000, depth: 300 },
+                  { id: 14, width: 800, heigth: 2000, depth: 300 },
+                ],
+              },
+            ],
+          },
+        };
+
+        const detail = mockDetails[id];
+        if (detail) {
+          observer.next(detail);
+          observer.complete();
+        } else {
+          // Return a default mock for unknown IDs
+          observer.next({
+            id: id,
+            name: `Project ${id}`,
+            description: "Auto-generated mock project",
+            createdAt: "2026-01-01T00:00:00.000000",
+            updatedAt: "2026-01-14T00:00:00.000000",
+            deletedAt: null,
+            versions: [
+              {
+                id: 100 + id,
+                versionNumber: 1,
+                savedAt: "2026-01-01T00:00:00.000000",
+                versionNote: "Initial version",
+                name: `Project ${id}`,
+                description: "Auto-generated mock project",
+                bodies: [
+                  { id: 200 + id, width: 1000, heigth: 500, depth: 300 },
+                ],
+              },
+            ],
+          });
+          observer.complete();
+        }
+      }, 500);
+    });
+  }
+
+  /**
+   * Mock paginated response
+   */
+  getMockProjectsPaged(
+    page: number = 0,
+    size: number = 10
+  ): Observable<PagedResponse<Project>> {
+    return new Observable((observer) => {
+      setTimeout(() => {
+        const allProjects: Project[] = [
+          {
+            id: 1,
+            name: "Living Room Set",
+            description: "Modern furniture collection",
+            createdAt: "2026-01-10T10:30:00.000000",
+            updatedAt: "2026-01-12T15:45:00.000000",
+          },
+          {
+            id: 2,
+            name: "Office Desk",
+            description: "Ergonomic workspace",
+            createdAt: "2026-01-08T09:00:00.000000",
+            updatedAt: "2026-01-11T14:20:00.000000",
+          },
+          {
+            id: 3,
+            name: "Kitchen Cabinet",
+            description: "Storage solution",
+            createdAt: "2026-01-05T11:15:00.000000",
+            updatedAt: "2026-01-09T16:30:00.000000",
+          },
+          {
+            id: 4,
+            name: "Bedroom Wardrobe",
+            description: "Spacious closet",
+            createdAt: "2026-01-03T08:45:00.000000",
+            updatedAt: "2026-01-07T12:00:00.000000",
+          },
+          {
+            id: 5,
+            name: "Bookshelf",
+            description: "Wall-mounted shelving",
+            createdAt: "2026-01-02T14:00:00.000000",
+            updatedAt: "2026-01-06T10:15:00.000000",
+          },
+          {
+            id: 6,
+            name: "Dining Table",
+            description: "Extendable table for 6-8",
+            createdAt: "2025-12-28T09:30:00.000000",
+            updatedAt: "2026-01-04T11:45:00.000000",
+          },
+          {
+            id: 7,
+            name: "TV Stand",
+            description: "Entertainment center",
+            createdAt: "2025-12-25T16:00:00.000000",
+            updatedAt: "2026-01-02T13:30:00.000000",
+          },
+          {
+            id: 8,
+            name: "Shoe Rack",
+            description: "Entryway organizer",
+            createdAt: "2025-12-20T10:00:00.000000",
+            updatedAt: "2025-12-30T09:00:00.000000",
+          },
+        ];
+
+        const start = page * size;
+        const end = start + size;
+        const content = allProjects.slice(start, end);
+        const totalElements = allProjects.length;
+        const totalPages = Math.ceil(totalElements / size);
+
+        observer.next({
+          content,
+          totalPages,
+          totalElements,
+          size,
+          number: page,
+          first: page === 0,
+          last: page >= totalPages - 1,
+          empty: content.length === 0,
+        });
         observer.complete();
       }, 800);
     });
