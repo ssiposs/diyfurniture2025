@@ -1,9 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EditProjectDialogComponent } from './edit-item-dialog.component';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ProjectService } from '../../services/project.service';
 import { of } from 'rxjs';
 import { ReactiveFormsModule } from '@angular/forms';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTableModule } from '@angular/material/table';
+import { MatInputModule } from '@angular/material/input';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 
 describe('EditProjectDialogComponent', () => {
   let component: EditProjectDialogComponent;
@@ -20,7 +26,16 @@ describe('EditProjectDialogComponent', () => {
 
     await TestBed.configureTestingModule({
       declarations: [ EditProjectDialogComponent ],
-      imports: [ ReactiveFormsModule ],
+      imports: [ 
+        ReactiveFormsModule,
+        BrowserAnimationsModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatTableModule,
+        MatIconModule,
+        MatProgressSpinnerModule
+       ],
       providers: [
         { provide: ProjectService, useValue: mockProjectService },
         { provide: MatDialogRef, useValue: mockDialogRef },
