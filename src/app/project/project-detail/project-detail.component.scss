@@ -654,6 +654,11 @@ $radius-lg: 16px;
 
     .restore-btn {
       font-size: 12px;
+      color: $success;
+
+      &:hover {
+        background: rgba($success, 0.1);
+      }
 
       mat-icon {
         font-size: 14px;
